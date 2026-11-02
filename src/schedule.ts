@@ -25,4 +25,4 @@ export function windowFor(s: Schedule, date: Date): { start: number; end: number
   return w.on ? { start: w.start, end: w.end } : null;
 }
 
-export const describe = (w: Window) => (w.on ? `${w.start}u – ${w.end}u` : 'No snaps');
+export const describe = (w: Window) => (w.on ? `${w.start}u – ${w.end}u` : 'Geen snaps');

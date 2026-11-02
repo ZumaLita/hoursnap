@@ -39,7 +39,7 @@ function Shields({ n, size = 16 }: { n: number; size?: number }) {
 function Timeline({ today, hours: hours_, compact }: { today: Record<number, SlotState>; hours: Hours; compact?: boolean }) {
   const c = useTheme();
   const hours: number[] = [];
-  if (!hours_) return compact ? <View style={{ height: 8, borderRadius: 4, backgroundColor: c.surfaceContainerHigh }} /> : <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>No snap hours today. Enjoy your day off.</Text>;
+  if (!hours_) return compact ? <View style={{ height: 8, borderRadius: 4, backgroundColor: c.surfaceContainerHigh }} /> : <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>Vandaag geen snap-uren. Geniet van je vrije dag.</Text>;
   for (let h = hours_.start; h <= hours_.end; h++) hours.push(h);
   const bg = (st: SlotState) => (st === 'snap' ? c.fire : st === 'saved' ? c.shield : st === 'missed' ? c.surfaceContainerHighest : 'transparent');
   return (
@@ -114,7 +114,7 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
       contentContainerStyle={[s.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + TAB_BAR_HEIGHT + 104 }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[c.primary]} tintColor={c.primary} />}
     >
-      <TopBar title="Streaks" overline={mine.todayHours ? `Today: ${mine.todayHours.start}u – ${mine.todayHours.end}u` : 'No snap hours today'} />
+      <TopBar title="Streaks" overline={mine.todayHours ? `Vandaag: ${mine.todayHours.start}u – ${mine.todayHours.end}u` : 'Vandaag geen snap-uren'} />
 
       <Card style={[s.hero, { backgroundColor: lit ? c.fireContainer : c.surfaceContainerHigh }]}>
         <View style={s.heroTop}>
@@ -129,7 +129,7 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
           <View style={{ flex: 1 }}>
             <Text style={[T.hero, { color: lit ? c.onFireContainer : c.onSurface }]}>{mine.current}</Text>
             <Text style={[T.titleMedium, { color: lit ? c.onFireContainer : c.onSurfaceVariant, marginTop: -4 }]}>
-              hour{mine.current === 1 ? '' : 's'} in a row
+              uur op rij
             </Text>
           </View>
         </View>
@@ -141,11 +141,11 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
           </View>
           <View style={[s.stat, { backgroundColor: c.surfaceContainerLowest }]}>
             <Text style={[T.titleLargeEmph, T.num, { color: c.onSurface }]}>{mine.best}</Text>
-            <Text style={[T.labelMedium, { color: c.onSurfaceVariant }]}>Best</Text>
+            <Text style={[T.labelMedium, { color: c.onSurfaceVariant }]}>Beste</Text>
           </View>
           <View style={[s.stat, { backgroundColor: c.surfaceContainerLowest }]}>
             <Text style={[T.titleLargeEmph, T.num, { color: c.onSurface }]}>{mine.todaySnaps}</Text>
-            <Text style={[T.labelMedium, { color: c.onSurfaceVariant }]}>Today</Text>
+            <Text style={[T.labelMedium, { color: c.onSurfaceVariant }]}>Vandaag</Text>
           </View>
         </View>
 
@@ -165,22 +165,22 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
       </Card>
 
       <Card tone="low" style={s.today}>
-        <Text style={[T.titleMedium, { color: c.onSurface, marginBottom: 14 }]}>Today</Text>
+        <Text style={[T.titleMedium, { color: c.onSurface, marginBottom: 14 }]}>Vandaag</Text>
         <Timeline today={mine.today} hours={mine.todayHours} />
       </Card>
 
       <Press onPress={() => setHowOpen((o) => !o)} radius={S.full} style={s.how}>
         <Icon name="help-circle-outline" size={20} color={c.primary} />
-        <Text style={[T.labelLarge, { color: c.primary, flex: 1 }]}>How streaks work</Text>
+        <Text style={[T.labelLarge, { color: c.primary, flex: 1 }]}>Zo werken streaks</Text>
         <Icon name={howOpen ? 'chevron-up' : 'chevron-down'} size={20} color={c.primary} />
       </Press>
       {howOpen && (
         <Card tone="base" style={{ padding: 16, gap: 14 }}>
           {(
             [
-              ['fire', c.fire, 'Snap at least once in every hour you picked (school days, weekends, holidays) and your streak grows.'],
-              ['shield', c.shield, `An extra snap earns a bonus: a second one in the same hour (10u and 10u30), or one outside the hours. Hold up to ${MAX_BONUS}.`],
-              ['shield-check', c.shield, 'Forget an hour? A bonus springs in and saves your streak. None left means back to 0.'],
+              ['fire', c.fire, 'Snap minstens één keer in elk uur dat je koos (schooldagen, weekend, vakantie) en je streak groeit.'],
+              ['shield', c.shield, `Een extra snap geeft een bonus: een tweede in hetzelfde uur (10u en 10u30), of een buiten je uren. Je kunt er ${MAX_BONUS} sparen.`],
+              ['shield-check', c.shield, 'Een uur vergeten? Een bonus springt in en redt je streak. Geen meer over? Dan terug naar 0.'],
             ] as [IconName, string, string][]
           ).map(([icon, color, text]) => (
             <View key={icon} style={{ flexDirection: 'row', gap: 12 }}>
@@ -191,12 +191,12 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
         </Card>
       )}
 
-      <SectionLabel>{`Awards · ${unlocked} of ${BADGES.length}`}</SectionLabel>
+      <SectionLabel>{`Prijzen · ${unlocked} van ${BADGES.length}`}</SectionLabel>
       <Card tone="low" style={s.awards}>
         {BADGES.map((b, i) => {
           const on = b.unlocked(mine);
           return (
-            <View key={b.key} style={s.award} accessibilityLabel={`${b.title}, ${on ? 'unlocked' : 'locked'}: ${b.hint}`}>
+            <View key={b.key} style={s.award} accessibilityLabel={`${b.title}, ${on ? 'gehaald' : 'nog op slot'}: ${b.hint}`}>
               <Shape kind={BADGE_SHAPES[i % BADGE_SHAPES.length]} size={64} color={on ? b.color : c.surfaceContainerHighest}>
                 <Icon name={on ? BADGE_ICONS[b.key] ?? 'star' : 'lock'} size={on ? 28 : 20} color={on ? '#FFFFFF' : c.outline} />
               </Shape>
@@ -211,7 +211,7 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
         })}
       </Card>
 
-      <SectionLabel>Leaderboard</SectionLabel>
+      <SectionLabel>Ranglijst</SectionLabel>
       <Card tone="low">
         {people.map((m, i) => {
           const st = stats.get(m.id) ?? computeStreak([], () => null);
@@ -221,7 +221,7 @@ export function Streaks({ me, members, rows, refreshing, onRefresh }: { me: Me; 
                 <Text style={[T.titleSmall, { color: c.onSurfaceVariant, width: 22 }]}>{ranked.indexOf(m) + 1}</Text>
                 <Avatar id={m.id} name={m.name} size={40} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[T.titleMedium, { color: c.onSurface }]}>{m.id === me.id ? 'You' : m.name}</Text>
+                  <Text style={[T.titleMedium, { color: c.onSurface }]}>{m.id === me.id ? 'Jij' : m.name}</Text>
                   <Shields n={st.bonus} size={13} />
                 </View>
                 <View style={[s.memberChip, { backgroundColor: st.current > 0 ? c.fireContainer : c.surfaceContainerHighest }]}>

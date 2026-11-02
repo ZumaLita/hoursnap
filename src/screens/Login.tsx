@@ -37,7 +37,7 @@ function PinBoxes({ value, onChange, onDone, autoFocus }: { value: string; onCha
         keyboardType="number-pad"
         maxLength={PIN_LENGTH}
         style={st.hiddenInput}
-        accessibilityLabel="PIN"
+        accessibilityLabel="Pincode"
       />
     </View>
   );
@@ -58,7 +58,7 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
   const [mismatch, setMismatch] = useState<'pin' | 'taken' | null>(null);
 
   const goPin = () => {
-    if (!validPhone(phone)) return setError('Type your full phone number, like 0470 12 34 56.');
+    if (!validPhone(phone)) return setError('Typ je volledige gsm-nummer, zoals 0470 12 34 56.');
     setError('');
     setPin('');
     setStep('pin');
@@ -118,7 +118,7 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
   };
 
   const saveName = async () => {
-    if (name.length < 3) return setError('At least 3 letters or numbers.');
+    if (name.length < 3) return setError('Minstens 3 letters of cijfers.');
     if (!newMe) return;
     setBusy(true);
     setError('');
@@ -140,9 +140,9 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
           <>
             <Text style={[T.displayMedium, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>HourSnap</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 32 }]}>
-              Show your day, one hour at a time.{'\n'}Back camera and selfie, together.
+              Toon je dag, uur per uur.{'\n'}Achtercamera en selfie, samen.
             </Text>
-            <Text style={[T.titleMedium, { color: c.onSurface, marginBottom: 8 }]}>Your phone number</Text>
+            <Text style={[T.titleMedium, { color: c.onSurface, marginBottom: 8 }]}>Je gsm-nummer</Text>
             <TextInput
               value={phone}
               onChangeText={(t) => setPhone(t.replace(/[^\d+ ]/g, ''))}
@@ -156,35 +156,35 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
               onSubmitEditing={goPin}
               style={s.input}
             />
-            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Only used to log you in. Nobody else sees it.</Text>
+            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Alleen om in te loggen. Niemand anders ziet het.</Text>
             {!!error && <Text style={[T.bodyMedium, s.error]}>{error}</Text>}
-            <Button title="Next" icon="arrow-right" big onPress={goPin} style={{ marginTop: 24 }} />
+            <Button title="Verder" icon="arrow-right" big onPress={goPin} style={{ marginTop: 24 }} />
           </>
         )}
 
         {step === 'pin' && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Your PIN</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Je pincode</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 28 }]}>
-              Type your {PIN_LENGTH}-digit PIN.{'\n'}New here? Make one up now.
+              Typ je pincode van {PIN_LENGTH} cijfers.{'\n'}Nieuw? Verzin er nu een.
             </Text>
             <PinBoxes key="pin" value={pin} onChange={setPin} onDone={tryLogin} autoFocus />
             {busy && <ActivityIndicator color={c.primary} style={{ marginTop: 20 }} />}
             {!!error && <Text style={[T.bodyMedium, s.error, { textAlign: 'center' }]}>{error}</Text>}
-            <Button title="Other phone number" variant="text" onPress={() => setStep('phone')} style={{ marginTop: 24 }} />
+            <Button title="Ander gsm-nummer" variant="text" onPress={() => setStep('phone')} style={{ marginTop: 24 }} />
           </>
         )}
 
         {step === 'confirm' && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Type it again</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Nog een keer</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 20 }]}>
-              First time on HourSnap? Type the same PIN again to make your account.
+              Eerste keer op HourSnap? Typ dezelfde pincode nog eens om je account te maken.
             </Text>
             <View style={[s.warn, { backgroundColor: c.tertiaryContainer }]}>
               <Icon name="safe-square-outline" size={26} color={c.onTertiaryContainer} />
               <Text style={[T.titleSmall, { color: c.onTertiaryContainer, flex: 1, fontFamily: FONTS.b }]}>
-                Save your PIN somewhere safe! You need it to log in on another phone.
+                Bewaar je pincode op een veilige plek! Je hebt hem nodig om op een andere gsm in te loggen.
               </Text>
             </View>
             <PinBoxes key="confirm" value={pin2} onChange={(v) => { setPin2(v); if (v) setMismatch(null); }} onDone={confirm} autoFocus />
@@ -192,11 +192,11 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
             {!!error && <Text style={[T.bodyMedium, s.error, { textAlign: 'center' }]}>{error}</Text>}
             {!mismatch && !busy && (
               <Button
-                title="I already have an account"
+                title="Ik heb al een account"
                 variant="text"
                 onPress={() => {
                   changePin();
-                  setError('Wrong PIN for this number. Try again.');
+                  setError('Foute pincode voor dit nummer. Probeer opnieuw.');
                 }}
                 style={{ marginTop: 20 }}
               />
@@ -204,9 +204,9 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
             {mismatch && (
               <View style={[s.mismatch, { backgroundColor: c.errorContainer }]}>
                 <Text style={[T.bodyLarge, { color: c.onErrorContainer, textAlign: 'center' }]}>
-                  {mismatch === 'pin' ? "That's not the same PIN. Try again, or pick a new one." : 'This number already has an account, so that PIN was wrong.'}
+                  {mismatch === 'pin' ? 'Dat is niet dezelfde pincode. Probeer opnieuw of kies een nieuwe.' : 'Dit nummer heeft al een account, dus die pincode was fout.'}
                 </Text>
-                <Button title={mismatch === 'pin' ? 'Change PIN' : 'Try my PIN again'} icon="key-outline" big onPress={changePin} style={{ marginTop: 12, alignSelf: 'stretch' }} />
+                <Button title={mismatch === 'pin' ? 'Pincode wijzigen' : 'Mijn pincode opnieuw proberen'} icon="key-outline" big onPress={changePin} style={{ marginTop: 12, alignSelf: 'stretch' }} />
               </View>
             )}
           </>
@@ -214,16 +214,16 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
 
         {step === 'name' && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>You're in!</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Je bent binnen!</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 28 }]}>
-              Pick a username. Friends find you with it to add you to their rooms.
+              Kies een gebruikersnaam. Vrienden vinden je ermee om je aan hun rooms toe te voegen.
             </Text>
             <View style={[s.input, { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 0 }]}>
               <Text style={[T.titleLarge, { color: c.onSurfaceVariant, paddingLeft: 18 }]}>@</Text>
             <TextInput
               value={name}
               onChangeText={(t) => setName(cleanUsername(t))}
-              placeholder="username"
+              placeholder="gebruikersnaam"
               placeholderTextColor={c.outline}
               autoCapitalize="none"
               autoCorrect={false}
@@ -234,9 +234,9 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
               style={[T.titleLarge, { flex: 1, height: '100%', color: c.onSurface, paddingLeft: 2, paddingRight: 18, outlineStyle: 'none' } as never]}
             />
             </View>
-            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Letters, numbers, dots and _. Like @lena.v</Text>
+            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Letters, cijfers, puntjes en _. Zoals @lena.v</Text>
             {!!error && <Text style={[T.bodyMedium, s.error]}>{error}</Text>}
-            <Button title="Let's go" icon="arrow-right" big busy={busy} onPress={saveName} style={{ marginTop: 24 }} />
+            <Button title="Let's go!" icon="arrow-right" big busy={busy} onPress={saveName} style={{ marginTop: 24 }} />
           </>
         )}
       </ScrollView>

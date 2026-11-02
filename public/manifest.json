@@ -1,7 +1,7 @@
 {
   "name": "HourSnap",
   "short_name": "HourSnap",
-  "description": "Show your day, one hour at a time",
+  "description": "Toon je dag, uur per uur",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#4A3AFF",

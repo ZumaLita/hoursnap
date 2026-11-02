@@ -32,7 +32,7 @@ export default async ({ req, res, log, error }) => {
   }
 
   const me = req.headers['x-appwrite-user-id'];
-  if (!me) return res.json({ error: 'Log in first.' }, 401);
+  if (!me) return res.json({ error: 'Log eerst in.' }, 401);
   let body = {};
   try {
     body = typeof req.bodyJson === 'object' && req.bodyJson ? req.bodyJson : JSON.parse(req.bodyText || '{}');
@@ -66,10 +66,10 @@ export default async ({ req, res, log, error }) => {
       case 'post': {
         const { backId, frontId, caption, onTime, style, viewOnce, hour, day } = body;
         const groupIds = [...new Set(Array.isArray(body.groupIds) ? body.groupIds : [])];
-        if (!groupIds.length) return fail('Pick where to post.');
+        if (!groupIds.length) return fail('Kies waar je wilt posten.');
         for (const f of [backId, frontId]) {
           const file = await storage.getFile({ bucketId: 'photos', fileId: f });
-          if (!file.$permissions.some((p) => p.includes(`user:${me}`))) return fail('That photo is not yours.', 403);
+          if (!file.$permissions.some((p) => p.includes(`user:${me}`))) return fail('Die foto is niet van jou.', 403);
         }
         let everyone = false;
         const readers = new Set([me]);
@@ -79,7 +79,7 @@ export default async ({ req, res, log, error }) => {
             continue;
           }
           const room = await getRoom(g);
-          if (!room || !room.members.includes(me)) return fail('You are not in that room.', 403);
+          if (!room || !room.members.includes(me)) return fail('Je zit niet in die room.', 403);
           room.members.forEach((m) => readers.add(m));
         }
         const roles = everyone ? [Role.users()] : [...readers].map((m) => Role.user(m));
@@ -114,29 +114,29 @@ export default async ({ req, res, log, error }) => {
 
       case 'room.create': {
         const name = String(body.name || '').trim().slice(0, 40);
-        if (name.length < 2) return fail('Give the room a name.');
+        if (name.length < 2) return fail('Geef de room een naam.');
         const owned = await db.listRows({ databaseId: DB, tableId: 'groups', queries: [Query.equal('ownerId', me), Query.limit(50)] });
-        if (owned.total >= 20) return fail('You already made 20 rooms.');
+        if (owned.total >= 20) return fail('Je hebt al 20 rooms gemaakt.');
         const members = await cleanMembers(body.memberIds);
-        if (members.length > MAX_ROOM) return fail(`A room has at most ${MAX_ROOM} people.`);
+        if (members.length > MAX_ROOM) return fail(`Een room heeft max ${MAX_ROOM} mensen.`);
         const row = await db.createRow({ databaseId: DB, tableId: 'groups', rowId: 'unique()', data: { name, kind: 'room', ownerId: me, members }, permissions: roomPerms(members) });
         return res.json({ room: row });
       }
 
       case 'room.update': {
         const room = await getRoom(body.roomId);
-        if (!room) return fail('Room not found.', 404);
-        if (room.ownerId !== me) return fail('Only the person who made the room can change it.', 403);
+        if (!room) return fail('Room niet gevonden.', 404);
+        if (room.ownerId !== me) return fail('Alleen wie de room maakte, kan hem aanpassen.', 403);
         const name = body.name !== undefined ? String(body.name).trim().slice(0, 40) : room.name;
         const members = body.memberIds ? await cleanMembers(body.memberIds) : room.members;
-        if (members.length > MAX_ROOM) return fail(`A room has at most ${MAX_ROOM} people.`);
+        if (members.length > MAX_ROOM) return fail(`Een room heeft max ${MAX_ROOM} mensen.`);
         const row = await db.updateRow({ databaseId: DB, tableId: 'groups', rowId: room.$id, data: { name, members }, permissions: roomPerms(members) });
         return res.json({ room: row });
       }
 
       case 'room.leave': {
         const room = await getRoom(body.roomId);
-        if (!room || !room.members.includes(me)) return fail('Room not found.', 404);
+        if (!room || !room.members.includes(me)) return fail('Room niet gevonden.', 404);
         const members = room.members.filter((m) => m !== me);
         if (!members.length) {
           await db.deleteRow({ databaseId: DB, tableId: 'groups', rowId: room.$id });
@@ -148,8 +148,8 @@ export default async ({ req, res, log, error }) => {
       }
 
       case 'admin.ban': {
-        if (!(await isAdmin())) return fail('Only Storm can do that.', 403);
-        if (body.userId === me) return fail("You can't remove yourself.");
+        if (!(await isAdmin())) return fail('Alleen Storm kan dat.', 403);
+        if (body.userId === me) return fail('Je kunt jezelf niet verwijderen.');
         const banned = !!body.banned;
         await users.updateStatus({ userId: body.userId, status: !banned });
         await db.updateRow({ databaseId: DB, tableId: 'profiles', rowId: body.userId, data: { banned } });
@@ -157,10 +157,10 @@ export default async ({ req, res, log, error }) => {
       }
 
       default:
-        return fail('Unknown action.');
+        return fail('Onbekende actie.');
     }
   } catch (e) {
     error(String(e?.message || e));
-    return fail(e?.message || 'Something went wrong.', 500);
+    return fail(e?.message || 'Er ging iets mis.', 500);
   }
 };

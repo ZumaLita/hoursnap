@@ -40,11 +40,11 @@ function Page({
 
   const confirmDelete = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Delete this snap for everyone?')) onDelete();
+      if (window.confirm('Deze snap voor iedereen verwijderen?')) onDelete();
     } else
-      Alert.alert('Delete snap?', 'It disappears for everyone.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: onDelete },
+      Alert.alert('Snap verwijderen?', 'Hij verdwijnt voor iedereen.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Verwijderen', style: 'destructive', onPress: onDelete },
       ]);
   };
 
@@ -72,18 +72,18 @@ function Page({
                 radius={22}
                 squish={0.85}
                 onPress={() => onReact(e)}
-                accessibilityLabel={`React ${e}`}
+                accessibilityLabel={`Reageer ${e}`}
                 style={[styles.emoji, mine === e && { backgroundColor: 'rgba(255,255,255,0.22)' }]}
               >
                 <Text style={{ fontSize: 22 }}>{e}</Text>
               </Press>
             ))}
           </View>
-          <Press radius={22} onPress={onKeep} accessibilityLabel={kept ? 'Remove from memories' : 'Keep forever'} style={styles.round}>
+          <Press radius={22} onPress={onKeep} accessibilityLabel={kept ? 'Niet meer bewaren' : 'Voor altijd bewaren'} style={styles.round}>
             <Icon name={kept ? 'star' : 'star-outline'} size={22} color={kept ? '#FFD60A' : '#FFFFFF'} />
           </Press>
           {snap.authorId === meId && (
-            <Press radius={22} onPress={confirmDelete} accessibilityLabel="Delete snap" style={styles.round}>
+            <Press radius={22} onPress={confirmDelete} accessibilityLabel="Snap verwijderen" style={styles.round}>
               <Icon name="delete-outline" size={22} color="#FF453A" />
             </Press>
           )}
@@ -127,13 +127,13 @@ export function Viewer({
               <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.6)' }]}>
                 {time(current.$createdAt)}
                 {current.onTime ? '' : ' · extra snap'}
-                {snaps.length > 1 ? `  ·  ${index + 1} of ${snaps.length}` : ''}
+                {snaps.length > 1 ? `  ·  ${index + 1} van ${snaps.length}` : ''}
               </Text>
             </View>
             <Press
               radius={22}
               onPress={onClose}
-              accessibilityLabel="Close"
+              accessibilityLabel="Sluiten"
               style={styles.round}
             >
               <Icon name="close" size={24} color="#FFFFFF" />

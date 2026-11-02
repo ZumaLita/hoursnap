@@ -31,7 +31,7 @@ export function GroupBar({
             radius={S.lg}
             squish={0.94}
             accessibilityState={{ selected: on }}
-            accessibilityLabel={g.kind === 'lab' ? 'LAB school group' : `Room ${g.name}`}
+            accessibilityLabel={g.kind === 'lab' ? 'LAB schoolgroep' : `Room ${g.name}`}
             style={[st.tab, { backgroundColor: on ? c.primary : c.surfaceContainerLow, borderColor: on ? c.primary : c.outlineVariant }]}
           >
             <Icon name={g.kind === 'lab' ? 'school' : 'lock'} size={18} color={on ? c.onPrimary : c.onSurfaceVariant} />
@@ -43,7 +43,7 @@ export function GroupBar({
           </Press>
         );
       })}
-      <Press onPress={onNew} radius={S.lg} squish={0.94} accessibilityLabel="Make a private room" style={[st.tab, st.add, { borderColor: c.outline }]}>
+      <Press onPress={onNew} radius={S.lg} squish={0.94} accessibilityLabel="Maak een privé-room" style={[st.tab, st.add, { borderColor: c.outline }]}>
         <Icon name="plus" size={18} color={c.onSurface} />
         <Text style={[T.titleSmall, { color: c.onSurface }]}>Room</Text>
       </Press>
@@ -104,7 +104,7 @@ export function RoomSheet({
   };
 
   const save = async () => {
-    if (name.trim().length < 2) return setError('Give your room a name.');
+    if (name.trim().length < 2) return setError('Geef je room een naam.');
     setBusy(true);
     setError('');
     try {
@@ -120,7 +120,7 @@ export function RoomSheet({
 
   const leave = async () => {
     if (!room) return;
-    if (Platform.OS === 'web' && !window.confirm(`Leave ${room.name}?`)) return;
+    if (Platform.OS === 'web' && !window.confirm(`${room.name} verlaten?`)) return;
     setBusy(true);
     try {
       await leaveRoom(room.$id);
@@ -136,24 +136,24 @@ export function RoomSheet({
 
   return (
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={st.backdrop} onPress={onClose} accessibilityLabel="Close" />
+      <Pressable style={st.backdrop} onPress={onClose} accessibilityLabel="Sluiten" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={st.sheetWrap} pointerEvents="box-none">
         <View style={[st.sheet, { backgroundColor: c.surfaceContainerLow, paddingBottom: insets.bottom + 16 }]}>
           <View style={[st.handle, { backgroundColor: c.outlineVariant }]} />
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Icon name="lock" size={22} color={c.primary} />
-              <Text style={[T.headlineSmall, { color: c.onSurface, flex: 1 }]}>{room ? (owner ? 'Your room' : room.name) : 'New private room'}</Text>
+              <Text style={[T.headlineSmall, { color: c.onSurface, flex: 1 }]}>{room ? (owner ? 'Jouw room' : room.name) : 'Nieuwe privé-room'}</Text>
             </View>
             <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, marginTop: 4 }]}>
-              Only the people in it see what you post here. Max {MAX_ROOM} people.
+              Alleen wie erin zit, ziet wat je hier post. Max {MAX_ROOM} mensen.
             </Text>
 
             {owner && (
               <TextInput
                 value={name}
                 onChangeText={setName}
-                placeholder="Room name, like Best friends"
+                placeholder="Naam van de room, zoals Beste vrienden"
                 placeholderTextColor={c.outline}
                 maxLength={40}
                 style={[st.input, T.titleMedium, { color: c.onSurface, borderColor: c.outlineVariant, backgroundColor: c.surface }]}
@@ -161,15 +161,15 @@ export function RoomSheet({
             )}
 
             <Text style={[T.labelLarge, { color: c.onSurfaceVariant, marginTop: 18, marginBottom: 8 }]}>
-              People · {picked.length + 1}/{MAX_ROOM}
+              Mensen · {picked.length + 1}/{MAX_ROOM}
             </Text>
             <View style={st.chips}>
               <View style={[st.chip, { backgroundColor: c.secondaryContainer }]}>
                 <Avatar id={me.id} name={me.name} size={26} />
-                <Text style={[T.labelLarge, { color: c.onSecondaryContainer }]}>You</Text>
+                <Text style={[T.labelLarge, { color: c.onSecondaryContainer }]}>Jij</Text>
               </View>
               {picked.map((id) => (
-                <Press key={id} onPress={owner ? () => toggle(id) : undefined} radius={S.full} accessibilityLabel={`Remove ${person(id)?.username ?? ''}`} style={[st.chip, { backgroundColor: c.secondaryContainer }]}>
+                <Press key={id} onPress={owner ? () => toggle(id) : undefined} radius={S.full} accessibilityLabel={`${person(id)?.username ?? ''} verwijderen`} style={[st.chip, { backgroundColor: c.secondaryContainer }]}>
                   <Avatar id={id} name={person(id)?.username ?? '?'} size={26} />
                   <Text style={[T.labelLarge, { color: c.onSecondaryContainer }]}>@{person(id)?.username ?? '…'}</Text>
                   {owner && <Icon name="close" size={16} color={c.onSecondaryContainer} />}
@@ -184,7 +184,7 @@ export function RoomSheet({
                   <TextInput
                     value={q}
                     onChangeText={setQ}
-                    placeholder={full ? 'Room is full' : 'Search @username'}
+                    placeholder={full ? 'Room is vol' : 'Zoek @gebruikersnaam'}
                     placeholderTextColor={c.outline}
                     editable={!full}
                     autoCapitalize="none"
@@ -203,7 +203,7 @@ export function RoomSheet({
                     </Press>
                   );
                 })}
-                {!!q.trim() && !searching && !found.length && <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, marginTop: 10 }]}>Nobody with that username yet.</Text>}
+                {!!q.trim() && !searching && !found.length && <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, marginTop: 10 }]}>Nog niemand met die gebruikersnaam.</Text>}
               </>
             )}
 
@@ -211,9 +211,9 @@ export function RoomSheet({
           </ScrollView>
 
           <View style={{ gap: 6, marginTop: 8 }}>
-            {owner && <Button title={room ? 'Save room' : 'Make room'} icon="check" big busy={busy} onPress={save} />}
-            {room && <Button title="Leave room" variant="text" onPress={leave} />}
-            {!room && <Button title="Cancel" variant="text" onPress={onClose} />}
+            {owner && <Button title={room ? 'Room opslaan' : 'Room maken'} icon="check" big busy={busy} onPress={save} />}
+            {room && <Button title="Room verlaten" variant="text" onPress={leave} />}
+            {!room && <Button title="Annuleren" variant="text" onPress={onClose} />}
           </View>
         </View>
       </KeyboardAvoidingView>

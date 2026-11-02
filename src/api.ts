@@ -36,9 +36,9 @@ export const dayKey = (d = new Date()) =>
 const code = (e: unknown) => (e as { type?: string; code?: number })?.type ?? '';
 export function niceError(e: unknown) {
   const msg = (e as { message?: string })?.message ?? String(e);
-  if (/invalid credentials|user_invalid_credentials/i.test(msg)) return 'Wrong PIN for this number.';
-  if (/user_count_exceeded|limit/i.test(msg) && /user/i.test(msg)) return 'HourSnap is full. Ask Storm to make room.';
-  if (/network|fetch/i.test(msg)) return "Couldn't reach the server. Check your internet.";
+  if (/invalid credentials|user_invalid_credentials/i.test(msg)) return 'Foute pincode voor dit nummer.';
+  if (/user_count_exceeded|limit/i.test(msg) && /user/i.test(msg)) return 'HourSnap zit vol. Vraag Storm om plaats te maken.';
+  if (/network|fetch/i.test(msg)) return 'Geen verbinding met de server. Check je internet.';
   return msg;
 }
 
@@ -49,7 +49,7 @@ async function call<T>(action: string, payload: Record<string, unknown> = {}): P
   try {
     out = JSON.parse(ex.responseBody || '{}');
   } catch {}
-  if (ex.responseStatusCode >= 400 || out.error) throw new Error(out.error || 'Something went wrong. Try again.');
+  if (ex.responseStatusCode >= 400 || out.error) throw new Error(out.error || 'Er ging iets mis. Probeer opnieuw.');
   return out as T;
 }
 
@@ -93,12 +93,12 @@ export async function signup(phone: string, pin: string): Promise<Me> {
   try {
     await account.create({ userId: ID.unique(), email: loginEmail(phone), password: loginPassword(phone, pin) });
   } catch (e) {
-    if (/user_already_exists|already exists/i.test(String((e as Error).message) + code(e))) throw new NumberTaken('This number already has an account.');
+    if (/user_already_exists|already exists/i.test(String((e as Error).message) + code(e))) throw new NumberTaken('Dit nummer heeft al een account.');
     throw e;
   }
   await account.createEmailPasswordSession({ email: loginEmail(phone), password: loginPassword(phone, pin) });
   const me = await currentUser();
-  if (!me) throw new Error('Could not log in');
+  if (!me) throw new Error('Inloggen lukte niet');
   return me;
 }
 
@@ -108,13 +108,13 @@ export const cleanUsername = (t: string) => t.toLowerCase().replace(/^@/, '').re
 /** Picks the unique @username everyone sees, and makes the profile row. */
 export async function setUsername(me: Me, username: string, schedule: Schedule = DEFAULT_SCHEDULE): Promise<Me> {
   const u = cleanUsername(username);
-  if (!USERNAME_RE.test(u)) throw new Error('3 to 20 letters, numbers, dots or _');
+  if (!USERNAME_RE.test(u)) throw new Error('3 tot 20 letters, cijfers, puntjes of _');
   const taken = await tables.listRows({ databaseId: DB_ID, tableId: PROFILES_TABLE, queries: [Query.equal('username', u), Query.limit(1)] });
-  if (taken.rows.some((r) => r.$id !== me.id)) throw new Error(`@${u} is already taken. Try another one.`);
+  if (taken.rows.some((r) => r.$id !== me.id)) throw new Error(`@${u} is al bezet. Probeer een andere.`);
   try {
     await saveProfile({ ...me, name: u }, schedule, { username: u });
   } catch (e) {
-    if (/unique|already exists|duplicate/i.test(String((e as Error).message))) throw new Error(`@${u} is already taken. Try another one.`);
+    if (/unique|already exists|duplicate/i.test(String((e as Error).message))) throw new Error(`@${u} is al bezet. Probeer een andere.`);
     throw e;
   }
   await account.updateName({ name: u });

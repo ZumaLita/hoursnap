@@ -9,10 +9,10 @@ import { dayKey, type Group, type Me, type Member, type Snap } from '../api';
 import { GroupBar } from '../components/Rooms';
 
 function dayLabel(day: string) {
-  if (day === dayKey()) return 'Today';
-  if (day === dayKey(new Date(Date.now() - 864e5))) return 'Yesterday';
+  if (day === dayKey()) return 'Vandaag';
+  if (day === dayKey(new Date(Date.now() - 864e5))) return 'Gisteren';
   const [y, m, d] = day.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  return new Date(y, m - 1, d).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 type Item = { type: 'header'; key: string; day: string } | { type: 'snap'; key: string; snap: Snap };
@@ -124,7 +124,7 @@ export function Home({
           <Image source={require('../../assets/logo-mark.png')} style={{ width: 36, height: 36 }} accessibilityLabel="" />
           <Text style={[s.wordmark, { color: c.onSurface }]}>HourSnap</Text>
         </View>
-        <Press onPress={onStreaks} radius={S.full} accessibilityLabel={`Streak ${streak} hours`} style={[s.streak, { backgroundColor: streak > 0 ? c.fireContainer : c.surfaceContainerLow }]}>
+        <Press onPress={onStreaks} radius={S.full} accessibilityLabel={`Streak ${streak} uur`} style={[s.streak, { backgroundColor: streak > 0 ? c.fireContainer : c.surfaceContainerLow }]}>
           <Icon name="fire" size={20} color={streak > 0 ? c.fire : c.outline} />
           <Text style={[T.titleMedium, T.num, { color: streak > 0 ? c.onFireContainer : c.onSurfaceVariant }]}>{streak}</Text>
         </Press>
@@ -135,7 +135,7 @@ export function Home({
       <HourRibbon snaps={snaps} meId={me.id} />
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.people} style={{ marginHorizontal: -20 }}>
-        {[{ id: '', name: 'Everyone' }, ...people].map((m) => {
+        {[{ id: '', name: 'Iedereen' }, ...people].map((m) => {
           const on = (filter ?? '') === m.id;
           return (
             <Press
@@ -146,20 +146,20 @@ export function Home({
               style={[s.person, { backgroundColor: on ? c.onSurface : c.surfaceContainerLow }]}
             >
               {m.id ? <Avatar id={m.id} name={m.name} size={26} /> : <Icon name="account-group" size={20} color={on ? c.surface : c.onSurface} />}
-              <Text style={[T.labelLarge, { color: on ? c.surface : c.onSurface }]}>{m.id === me.id ? 'You' : m.name}</Text>
+              <Text style={[T.labelLarge, { color: on ? c.surface : c.onSurface }]}>{m.id === me.id ? 'Jij' : m.name}</Text>
             </Press>
           );
         })}
       </ScrollView>
 
       {!snappedThisHour && !filter && (
-        <Press onPress={onSnap} radius={6} squish={0.97} accessibilityLabel={`Take your ${nowH}u snap`} style={[s.empty, { borderColor: c.outline }]}>
+        <Press onPress={onSnap} radius={6} squish={0.97} accessibilityLabel={`Neem je snap van ${nowH}u`} style={[s.empty, { borderColor: c.outline }]}>
           <View style={[s.emptyIcon, { backgroundColor: c.primary }]}>
             <Icon name="camera" size={28} color={c.onPrimary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[T.titleLarge, { color: c.onSurface }]}>Your {nowH}u print is empty</Text>
-            <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>Tap to snap. Skipping is fine too.</Text>
+            <Text style={[T.titleLarge, { color: c.onSurface }]}>Je print van {nowH}u is nog leeg</Text>
+            <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>Tik om te snappen. Overslaan mag ook.</Text>
           </View>
         </Press>
       )}
@@ -176,7 +176,7 @@ export function Home({
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[c.primary]} tintColor={c.primary} />}
       ListEmptyComponent={
         <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 40 }]}>
-          {filter ? 'No snaps from them in the last 24 hours.' : `No snaps in ${groups.find((g) => g.$id === group)?.name ?? 'here'} in the last 24 hours. Be the first!`}
+          {filter ? 'Geen snaps van deze persoon in de laatste 24 uur.' : `Geen snaps in ${groups.find((g) => g.$id === group)?.name ?? 'hier'} in de laatste 24 uur. Wees de eerste!`}
         </Text>
       }
       renderItem={({ item }) =>

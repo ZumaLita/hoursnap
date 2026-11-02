@@ -34,21 +34,21 @@ export function ViewOnceTile({ snap, meId, onOpen, width }: { snap: Snap; meId: 
   const viewers = (snap.viewedBy ?? []).filter((id) => id !== snap.authorId).length;
   const opened = (snap.viewedBy ?? []).includes(meId);
   const canOpen = !mine && !opened;
-  const title = mine ? 'View once photo' : opened ? 'Opened' : 'Photo';
+  const title = mine ? 'Foto voor één keer' : opened ? 'Geopend' : 'Foto';
   const hint = mine
     ? viewers
-      ? `Opened by ${viewers} ${viewers === 1 ? 'person' : 'people'}`
-      : 'Nobody opened it yet'
+      ? `Geopend door ${viewers} ${viewers === 1 ? 'persoon' : 'mensen'}`
+      : 'Nog door niemand geopend'
     : opened
-      ? 'You can only see it once'
-      : 'Tap to open. You can see it one time.';
+      ? 'Je kunt hem maar één keer zien'
+      : 'Tik om te openen. Je kunt hem één keer zien.';
   return (
     <Press
       onPress={canOpen ? onOpen : undefined}
       disabled={!canOpen}
       radius={S.xl}
       squish={canOpen ? 0.96 : 1}
-      accessibilityLabel={canOpen ? 'Open view once photo' : title}
+      accessibilityLabel={canOpen ? 'Foto voor één keer openen' : title}
       style={[styles.tile, { width, backgroundColor: c.surfaceContainerLow, borderColor: canOpen ? c.primary : c.outlineVariant }]}
     >
       <OnceMark size={40} color={canOpen ? c.primary : c.outline} filled={canOpen} />
@@ -113,10 +113,10 @@ export function ViewOnceViewer({ snap, onClose }: { snap: Snap | null; onClose: 
             <Text style={[T.titleMedium, { color: '#FFFFFF' }]}>{snap.authorName}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <OnceMark size={16} color="rgba(235,235,245,0.7)" />
-              <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.7)' }]}>View once</Text>
+              <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.7)' }]}>Eén keer bekijken</Text>
             </View>
           </View>
-          <Press radius={22} onPress={onClose} accessibilityLabel="Close" style={styles.round}>
+          <Press radius={22} onPress={onClose} accessibilityLabel="Sluiten" style={styles.round}>
             <Icon name="close" size={24} color="#FFFFFF" />
           </Press>
         </View>
@@ -140,7 +140,7 @@ export function ViewOnceViewer({ snap, onClose }: { snap: Snap | null; onClose: 
         <View style={styles.note}>
           <Icon name={Platform.OS === 'web' ? 'eye-off-outline' : 'cellphone-screenshot'} size={18} color="rgba(235,235,245,0.6)" />
           <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.6)', textAlign: 'center' }]}>
-            {Platform.OS === 'web' ? 'Gone when you close it. Please don’t screenshot.' : 'Screenshots are blocked. Gone when you close it.'}
+            {Platform.OS === 'web' ? 'Weg als je hem sluit. Maak geen screenshot aub.' : 'Screenshots zijn geblokkeerd. Weg als je hem sluit.'}
           </Text>
         </View>
       </View>

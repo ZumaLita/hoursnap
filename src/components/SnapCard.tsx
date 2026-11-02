@@ -9,10 +9,10 @@ import type { Snap } from '../api';
 
 const ago = (iso: string) => {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 1) return 'net nu';
+  if (mins < 60) return `${mins} min geleden`;
   const h = Math.round(mins / 60);
-  return h < 24 ? `${h} h ago` : new Date(iso).toLocaleDateString(undefined, { weekday: 'long' });
+  return h < 24 ? `${h} u geleden` : new Date(iso).toLocaleDateString('nl-BE', { weekday: 'long' });
 };
 export function SnapCard({
   snap,
@@ -52,22 +52,22 @@ export function SnapCard({
 
   const confirmDelete = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Delete this snap for everyone?')) onDelete();
+      if (window.confirm('Deze snap voor iedereen verwijderen?')) onDelete();
     } else
-      Alert.alert('Delete snap?', 'It disappears for everyone.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: onDelete },
+      Alert.alert('Snap verwijderen?', 'Hij verdwijnt voor iedereen.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Verwijderen', style: 'destructive', onPress: onDelete },
       ]);
   };
 
   const confirmReport = () => {
     const go = () => onReport?.();
     if (Platform.OS === 'web') {
-      if (window.confirm('Report this snap? It gets hidden until Storm checks it.')) go();
+      if (window.confirm('Deze snap melden? Hij wordt verborgen tot Storm hem bekijkt.')) go();
     } else
-      Alert.alert('Report this snap?', 'It gets hidden for everyone until Storm checks it.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Report', style: 'destructive', onPress: go },
+      Alert.alert('Deze snap melden?', 'Hij wordt voor iedereen verborgen tot Storm hem bekijkt.', [
+        { text: 'Annuleren', style: 'cancel' },
+        { text: 'Melden', style: 'destructive', onPress: go },
       ]);
   };
   const reports = snap.reportedBy?.length ?? 0;
@@ -78,19 +78,19 @@ export function SnapCard({
         <View style={[styles.reported, { backgroundColor: c.errorContainer }]}>
           <Icon name="flag" size={20} color={c.onErrorContainer} />
           <Text style={[T.labelLarge, { color: c.onErrorContainer, flex: 1 }]}>
-            Reported by {reports} {reports === 1 ? 'person' : 'people'}. Hidden for everyone else.
+            Gemeld door {reports} {reports === 1 ? 'persoon' : 'mensen'}. Verborgen voor de rest.
           </Text>
           <Press onPress={onClearReports} radius={S.full} style={[styles.reportBtn, { backgroundColor: c.surfaceContainerLow }]}>
-            <Text style={[T.labelLarge, { color: c.onSurface }]}>It's fine</Text>
+            <Text style={[T.labelLarge, { color: c.onSurface }]}>Is in orde</Text>
           </Press>
         </View>
       )}
       <View style={styles.byline}>
         <Avatar id={snap.authorId} name={snap.authorName} size={36} />
-        <Text style={[T.titleMedium, { color: c.onSurface }]}>{snap.authorId === meId ? 'You' : snap.authorName}</Text>
+        <Text style={[T.titleMedium, { color: c.onSurface }]}>{snap.authorId === meId ? 'Jij' : snap.authorName}</Text>
         <Text style={[T.bodySmall, { color: c.onSurfaceVariant, flex: 1 }]}>{ago(snap.$createdAt)}</Text>
-        {snap.authorId !== meId && <IconButton icon="flag-outline" label="Report snap" onPress={confirmReport} size={40} />}
-        {(snap.authorId === meId || admin) && <IconButton icon="trash-can-outline" label="Delete snap" onPress={confirmDelete} size={40} />}
+        {snap.authorId !== meId && <IconButton icon="flag-outline" label="Snap melden" onPress={confirmReport} size={40} />}
+        {(snap.authorId === meId || admin) && <IconButton icon="trash-can-outline" label="Snap verwijderen" onPress={confirmDelete} size={40} />}
       </View>
 
       {snap.viewOnce ? (
@@ -114,7 +114,7 @@ export function SnapCard({
           onPress={() => onReact('❤️')}
           radius={S.full}
           squish={0.85}
-          accessibilityLabel={liked ? 'Unlike' : 'Like'}
+          accessibilityLabel={liked ? 'Niet meer leuk' : 'Leuk'}
           style={[styles.pill, { backgroundColor: c.surfaceContainerLow, borderColor: liked ? '#FF3B5C' : c.outlineVariant }]}
         >
           <Icon name={liked ? 'heart' : 'heart-outline'} size={21} color={liked ? '#FF3B5C' : c.onSurface} />
@@ -124,7 +124,7 @@ export function SnapCard({
           onPress={() => setPicker((p) => !p)}
           radius={S.full}
           squish={0.85}
-          accessibilityLabel="React with an emoji"
+          accessibilityLabel="Reageer met een emoji"
           style={[styles.pill, { backgroundColor: c.surfaceContainerLow, borderColor: mine && mine !== '❤️' ? c.primary : c.outlineVariant }]}
         >
           {mine && mine !== '❤️' ? <Text style={styles.emojiSm}>{mine}</Text> : <Icon name="emoticon-happy-outline" size={21} color={c.onSurface} />}
@@ -136,7 +136,7 @@ export function SnapCard({
           onPress={onKeep}
           radius={S.full}
           squish={0.85}
-          accessibilityLabel={kept ? 'Remove from kept' : 'Keep forever'}
+          accessibilityLabel={kept ? 'Niet meer bewaren' : 'Voor altijd bewaren'}
           style={[styles.pill, { backgroundColor: c.surfaceContainerLow, borderColor: kept ? c.fire : c.outlineVariant }]}
         >
           <Icon name={kept ? 'bookmark' : 'bookmark-outline'} size={21} color={kept ? c.fire : c.onSurface} />

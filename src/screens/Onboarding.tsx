@@ -14,7 +14,7 @@ function Stepper({ value, min, max, onChange }: { value: number; min: number; ma
   const c = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      <Pressable onPress={() => value > min && onChange(value - 1)} accessibilityLabel="Earlier" style={[st.step, { backgroundColor: c.surfaceContainerHigh }]}>
+      <Pressable onPress={() => value > min && onChange(value - 1)} accessibilityLabel="Vroeger" style={[st.step, { backgroundColor: c.surfaceContainerHigh }]}>
         <Icon name="minus" size={18} color={c.onSurface} />
       </Pressable>
       <Text style={[T.titleMedium, T.num, { color: c.onSurface, minWidth: 40, textAlign: 'center' }]}>{value}u</Text>
@@ -37,17 +37,17 @@ export function HoursCard({ icon, title, hint, w, onChange }: { icon: React.Comp
           <Text style={[T.titleMedium, { color: c.onSurface }]}>{title}</Text>
           <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]}>{hint}</Text>
         </View>
-        <Switch value={w.on} onChange={(on) => onChange({ ...w, on })} label={`${title} snapping`} />
+        <Switch value={w.on} onChange={(on) => onChange({ ...w, on })} label={`${title} snappen`} />
       </View>
       {w.on ? (
         <View style={st.hoursRow}>
-          <Text style={[T.labelLarge, { color: c.onSurfaceVariant }]}>From</Text>
+          <Text style={[T.labelLarge, { color: c.onSurfaceVariant }]}>Van</Text>
           <Stepper value={w.start} min={5} max={w.end} onChange={(v) => onChange({ ...w, start: v })} />
-          <Text style={[T.labelLarge, { color: c.onSurfaceVariant }]}>to</Text>
+          <Text style={[T.labelLarge, { color: c.onSurfaceVariant }]}>tot</Text>
           <Stepper value={w.end} min={w.start} max={23} onChange={(v) => onChange({ ...w, end: v })} />
         </View>
       ) : (
-        <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, marginTop: 10 }]}>No snaps and no reminders on these days.</Text>
+        <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, marginTop: 10 }]}>Geen snaps en geen meldingen op deze dagen.</Text>
       )}
     </View>
   );
@@ -121,14 +121,14 @@ export function Onboarding({
       <ScrollView contentContainerStyle={st.body} showsVerticalScrollIndicator={false}>
         {step === 0 && (
           <>
-            <Text style={[T.displayMedium, { color: c.onSurface }]}>Hi @{name}</Text>
-            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 10 }]}>Here's how HourSnap works.</Text>
+            <Text style={[T.displayMedium, { color: c.onSurface }]}>Hoi @{name}</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 10 }]}>Zo werkt HourSnap.</Text>
             {(
               [
-                ['clock-outline', 'Every hour', 'In the hours you pick, you get a little nudge to show what you\'re doing.'],
-                ['camera-flip-outline', 'Both cameras', 'One photo of what you see, then a quick selfie. Together they make one snap.'],
-                ['hand-okay', 'Never forced', 'Skip any hour you like. Snap extra whenever something fun happens.'],
-                ['timer-sand', 'Gone in 24 hours', 'Snaps disappear after a day, unless someone keeps them. Mean stuff can be reported.'],
+                ['clock-outline', 'Elk uur', 'In de uren die jij kiest, krijg je een seintje om te tonen wat je aan het doen bent.'],
+                ['camera-flip-outline', 'Twee camera\'s', 'Eén foto van wat je ziet, dan snel een selfie. Samen zijn ze één snap.'],
+                ['hand-okay', 'Nooit verplicht', 'Sla gerust een uur over. Snap extra als er iets leuks gebeurt.'],
+                ['timer-sand', 'Weg na 24 uur', 'Snaps verdwijnen na een dag, tenzij iemand ze bewaart. Gemene dingen kun je melden.'],
               ] as const
             ).map(([icon, title, text]) => (
               <View key={title} style={[st.point, { backgroundColor: c.surfaceContainerLow }]}>
@@ -146,9 +146,9 @@ export function Onboarding({
 
         {step === 1 && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Join your school</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Word lid van je school</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>
-              Everybody on HourSnap is in LAB. Later you can also make private rooms with up to 5 friends.
+              Iedereen op HourSnap zit in LAB. Later kun je ook privé-rooms maken met max 5 vrienden.
             </Text>
             <View style={[st.lab, { backgroundColor: joinedLab ? c.secondaryContainer : c.surfaceContainerLow, borderColor: joinedLab ? c.primary : c.outlineVariant }]}>
               <View style={[st.labIcon, { backgroundColor: c.primary }]}>
@@ -156,41 +156,41 @@ export function Onboarding({
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[T.headlineSmall, { color: c.onSurface }]}>LAB</Text>
-                <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>The school group. Everyone can join.</Text>
+                <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>De schoolgroep. Iedereen kan erbij.</Text>
               </View>
               {joinedLab && <Icon name="check-circle" size={30} color={c.primary} />}
             </View>
-            {!joinedLab && <Button title="Join LAB" icon="account-plus" big busy={busy} onPress={() => run(onJoinLab)} style={{ marginTop: 16 }} />}
-            {joinedLab && <Text style={[T.titleMedium, { color: c.primary, marginTop: 14, textAlign: 'center' }]}>You're in LAB 🎉</Text>}
+            {!joinedLab && <Button title="Word lid van LAB" icon="account-plus" big busy={busy} onPress={() => run(onJoinLab)} style={{ marginTop: 16 }} />}
+            {joinedLab && <Text style={[T.titleMedium, { color: c.primary, marginTop: 14, textAlign: 'center' }]}>Je zit in LAB 🎉</Text>}
             {!!err && <Text style={[T.bodyMedium, { color: c.error, marginTop: 12 }]}>{err}</Text>}
           </>
         )}
 
         {step === 2 && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Profile photo</Text>
-            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 28 }]}>So friends know it's you. You can skip this and add one later under Me.</Text>
-            <Pressable onPress={() => run(onPickAvatar)} accessibilityLabel="Pick a profile photo" style={{ alignSelf: 'center' }}>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Profielfoto</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 28 }]}>Zodat vrienden weten dat jij het bent. Je kunt dit overslaan en later toevoegen bij Ik.</Text>
+            <Pressable onPress={() => run(onPickAvatar)} accessibilityLabel="Kies een profielfoto" style={{ alignSelf: 'center' }}>
               <Avatar id={meId} name={name} size={148} photo={avatarId} />
               <View style={[st.camBadge, { backgroundColor: c.primary, borderColor: c.surface }]}>
                 <Icon name={avatarId ? 'pencil' : 'camera-plus'} size={22} color={c.onPrimary} />
               </View>
             </Pressable>
             <Text style={[T.titleLarge, { color: c.onSurface, textAlign: 'center', marginTop: 16 }]}>@{name}</Text>
-            <Button title={avatarId ? 'Pick another photo' : 'Pick a photo'} icon="image-outline" variant="tonal" busy={busy} onPress={() => run(onPickAvatar)} style={{ marginTop: 20, alignSelf: 'center' }} />
+            <Button title={avatarId ? 'Andere foto kiezen' : 'Kies een foto'} icon="image-outline" variant="tonal" busy={busy} onPress={() => run(onPickAvatar)} style={{ marginTop: 20, alignSelf: 'center' }} />
             {!!err && <Text style={[T.bodyMedium, { color: c.error, marginTop: 12, textAlign: 'center' }]}>{err}</Text>}
           </>
         )}
 
         {step === 3 && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Make it yours</Text>
-            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>Light or dark, and your colour. You can change this later under Me.</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Maak het van jou</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>Licht of donker, en jouw kleur. Je kunt dit later veranderen bij Ik.</Text>
             <ButtonGroup<Appearance>
               items={[
-                { key: 'auto', label: 'Phone' },
-                { key: 'light', label: 'Light' },
-                { key: 'dark', label: 'Dark' },
+                { key: 'auto', label: 'Gsm' },
+                { key: 'light', label: 'Licht' },
+                { key: 'dark', label: 'Donker' },
               ]}
               value={appearance}
               onChange={onAppearance}
@@ -206,7 +206,7 @@ export function Onboarding({
                       haptic();
                       onAccent(k);
                     }}
-                    accessibilityLabel={`${ACCENTS[k].name} colour`}
+                    accessibilityLabel={`Kleur ${ACCENTS[k].name}`}
                     accessibilityState={{ selected: on }}
                     style={st.colourItem}
                   >
@@ -222,15 +222,15 @@ export function Onboarding({
               <View style={[st.previewBtn, { backgroundColor: c.primary }]}>
                 <Icon name="camera-iris" size={22} color={c.onPrimary} />
               </View>
-              <Text style={[T.titleMedium, { color: c.onSurface, flex: 1 }]}>This is your snap button</Text>
+              <Text style={[T.titleMedium, { color: c.onSurface, flex: 1 }]}>Dit is je snapknop</Text>
             </View>
           </>
         )}
 
         {step === 4 && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Your photo style</Text>
-            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>This is how your snaps look for everyone.</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Je fotostijl</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>Zo zien je snaps eruit voor iedereen.</Text>
             <View style={st.styles}>
               {PHOTO_STYLES.map((p) => {
                 const on = p.key === photoStyle;
@@ -264,45 +264,45 @@ export function Onboarding({
 
         {step === 5 && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface }]}>When can you snap?</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Wanneer kun je snappen?</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>
-              Pick the hours that work for you. No phones in class? Then start after school. Your streak only counts these hours.
+              Kies de uren die voor jou werken. Geen gsm in de klas? Begin dan na school. Je streak telt alleen deze uren.
             </Text>
-            <HoursCard icon="school-outline" title="School days" hint="Monday to Friday" w={schedule.weekday} onChange={(w) => onSchedule({ ...schedule, weekday: w })} />
-            <HoursCard icon="sofa-outline" title="Weekends" hint="Saturday and Sunday" w={schedule.weekend} onChange={(w) => onSchedule({ ...schedule, weekend: w })} />
-            <HoursCard icon="beach" title="Holidays" hint="Turn on 'On holiday' under Me" w={schedule.holiday} onChange={(w) => onSchedule({ ...schedule, holiday: w })} />
+            <HoursCard icon="school-outline" title="Schooldagen" hint="Maandag tot vrijdag" w={schedule.weekday} onChange={(w) => onSchedule({ ...schedule, weekday: w })} />
+            <HoursCard icon="sofa-outline" title="Weekend" hint="Zaterdag en zondag" w={schedule.weekend} onChange={(w) => onSchedule({ ...schedule, weekend: w })} />
+            <HoursCard icon="beach" title="Vakantie" hint="Zet 'Ik heb vakantie' aan bij Ik" w={schedule.holiday} onChange={(w) => onSchedule({ ...schedule, holiday: w })} />
           </>
         )}
 
         {step === 6 && remindersSupported && (
           <>
-            <Text style={[T.headlineLarge, { color: c.onSurface }]}>A nudge every hour?</Text>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Elk uur een seintje?</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>
-              HourSnap can remind you at the start of every hour you picked. Snapping stays optional, and you can change it under Me.
+              HourSnap kan je aan het begin van elk gekozen uur een seintje geven. Snappen blijft vrijblijvend, en je kunt het veranderen bij Ik.
             </Text>
             <View style={[st.notif, { backgroundColor: c.surfaceContainerLow }]}>
               <View style={[st.notifIcon, { backgroundColor: c.primary }]}>
                 <Icon name="camera-iris" size={18} color={c.onPrimary} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[T.titleSmall, { color: c.onSurface }]}>📸 HourSnap time</Text>
-                <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>What are you up to right now?</Text>
+                <Text style={[T.titleSmall, { color: c.onSurface }]}>📸 HourSnap-tijd</Text>
+                <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>Wat ben je nu aan het doen?</Text>
               </View>
-              <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]}>now</Text>
+              <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]}>nu</Text>
             </View>
           </>
         )}
       </ScrollView>
 
       <View style={st.footer}>
-        {step > 0 ? <Button title="Back" variant="text" onPress={() => setStep(step - 1)} /> : <View />}
+        {step > 0 ? <Button title="Terug" variant="text" onPress={() => setStep(step - 1)} /> : <View />}
         {last && remindersSupported ? (
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Button title="Not now" variant="text" onPress={() => onDone(false)} />
-            <Button title="Turn on" icon="bell-ring-outline" big onPress={() => onDone(true)} />
+            <Button title="Niet nu" variant="text" onPress={() => onDone(false)} />
+            <Button title="Aanzetten" icon="bell-ring-outline" big onPress={() => onDone(true)} />
           </View>
         ) : (
-          <Button title={last ? 'Start snapping' : step === 2 && !avatarId ? 'Skip' : 'Next'} icon={last ? 'camera-iris' : 'arrow-right'} big onPress={blocked ? undefined : next} style={blocked ? { opacity: 0.35 } : undefined} />
+          <Button title={last ? 'Begin met snappen' : step === 2 && !avatarId ? 'Overslaan' : 'Verder'} icon={last ? 'camera-iris' : 'arrow-right'} big onPress={blocked ? undefined : next} style={blocked ? { opacity: 0.35 } : undefined} />
         )}
       </View>
     </View>

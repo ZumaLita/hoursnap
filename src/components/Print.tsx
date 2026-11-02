@@ -5,10 +5,10 @@ import { FONTS, T, useTheme } from '../theme';
 
 export type PhotoStyle = 'tape' | 'film' | 'sticker' | 'clean';
 export const PHOTO_STYLES: { key: PhotoStyle; name: string; hint: string }[] = [
-  { key: 'tape', name: 'Photo print', hint: 'White print, selfie taped on, date stamp' },
-  { key: 'film', name: 'Film strip', hint: 'Dark film frame with sprocket holes' },
-  { key: 'sticker', name: 'Sticker', hint: 'Thick white edge, round selfie sticker' },
-  { key: 'clean', name: 'Clean', hint: 'Full photo, rounded corners, no frame' },
+  { key: 'tape', name: 'Fotoafdruk', hint: 'Witte afdruk, selfie erop getaped, datumstempel' },
+  { key: 'film', name: 'Filmstrip', hint: 'Donker filmkader met gaatjes' },
+  { key: 'sticker', name: 'Sticker', hint: 'Dikke witte rand, ronde selfie-sticker' },
+  { key: 'clean', name: 'Strak', hint: 'Volledige foto, ronde hoeken, geen kader' },
 ];
 export const isPhotoStyle = (v: unknown): v is PhotoStyle => PHOTO_STYLES.some((s) => s.key === v);
 
@@ -74,7 +74,7 @@ export function Print({
     return (
       <View style={[s.film, { width }]}>
         <View style={s.holes}>{holes.map((_, i) => <View key={i} style={s.hole} />)}</View>
-        <Pressable onPress={onPress} accessibilityLabel="Swap photos" style={{ width: w }}>
+        <Pressable onPress={onPress} accessibilityLabel="Foto's wisselen" style={{ width: w }}>
           <View style={{ width: w, height: h1, overflow: 'hidden', borderRadius: 2 }}>
             {image('big', { width: w, height: h1 })}
             {stamp}
@@ -101,7 +101,7 @@ export function Print({
     const sw = Math.round(w * 0.36);
     return (
       <View style={[s.sticker, { width, backgroundColor: c.print, shadowColor: c.printShadow, transform: [{ rotate: `${tilt}deg` }] }]}>
-        <Pressable onPress={onPress} accessibilityLabel="Swap photos" style={{ width: w, height: h, overflow: 'hidden', borderRadius: 22 }}>
+        <Pressable onPress={onPress} accessibilityLabel="Foto's wisselen" style={{ width: w, height: h, overflow: 'hidden', borderRadius: 22 }}>
           {image('big', { width: w, height: h })}
           {badge}
         </Pressable>
@@ -123,7 +123,7 @@ export function Print({
     const sw = Math.round(w * 0.3);
     return (
       <View style={{ width }}>
-        <Pressable onPress={onPress} accessibilityLabel="Swap photos" style={{ width: w, height: h, overflow: 'hidden', borderRadius: 28 }}>
+        <Pressable onPress={onPress} accessibilityLabel="Foto's wisselen" style={{ width: w, height: h, overflow: 'hidden', borderRadius: 28 }}>
           {image('big', { width: w, height: h })}
           <View style={[s.cleanSelfie, { width: sw, height: Math.round((sw * 4) / 3) }]}>{image('small', { width: sw, height: Math.round((sw * 4) / 3) })}</View>
           <View style={s.cleanHour}>
@@ -146,7 +146,7 @@ export function Print({
   const sw = Math.round(w * 0.34);
   return (
     <View style={[s.print, { width, backgroundColor: c.print, shadowColor: c.printShadow, transform: [{ rotate: `${tilt}deg` }] }]}>
-      <Pressable onPress={onPress} accessibilityLabel="Swap photos" style={{ width: w, height: h, overflow: 'hidden', borderRadius: 3 }}>
+      <Pressable onPress={onPress} accessibilityLabel="Foto's wisselen" style={{ width: w, height: h, overflow: 'hidden', borderRadius: 3 }}>
         {image('big', { width: w, height: h })}
         {stamp}
         {badge}

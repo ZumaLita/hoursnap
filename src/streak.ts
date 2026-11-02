@@ -127,16 +127,16 @@ export type Badge = {
 };
 
 export const BADGES: Badge[] = [
-  { key: 'spark', title: 'Spark', hint: '3 hour streak', icon: 'flame-outline', color: '#FFB020', unlocked: (s) => s.best >= 3 },
-  { key: 'flame', title: 'Flame', hint: '7 hour streak', icon: 'flame', color: '#FF8A1F', unlocked: (s) => s.best >= 7 },
-  { key: 'blaze', title: 'Blaze', hint: '14 hour streak', icon: 'flame', color: '#FF5A1F', unlocked: (s) => s.best >= 14 },
-  { key: 'inferno', title: 'Inferno', hint: '30 hour streak', icon: 'bonfire', color: '#F03A2E', unlocked: (s) => s.best >= 30 },
-  { key: 'wildfire', title: 'Wildfire', hint: '60 hour streak', icon: 'bonfire', color: '#D61F69', unlocked: (s) => s.best >= 60 },
-  { key: 'legend', title: 'Legend', hint: '100 hour streak', icon: 'trophy', color: '#F5B700', unlocked: (s) => s.best >= 100 },
-  { key: 'fullday', title: 'Full day', hint: 'Snap all your hours', icon: 'calendar', color: '#3FA9F5', unlocked: (s) => s.fullDay },
-  { key: 'early', title: 'Early bird', hint: 'Snap before 8u', icon: 'sunny', color: '#F5B700', unlocked: (s) => s.earlyBird },
-  { key: 'owl', title: 'Night owl', hint: 'Snap after 22u', icon: 'moon', color: '#8C6CF0', unlocked: (s) => s.nightOwl },
-  { key: 'saved', title: 'Saved!', hint: 'A bonus saved you', icon: 'shield-checkmark', color: '#3FA9F5', unlocked: (s) => s.usedBonus },
-  { key: 'collector', title: 'Collector', hint: 'Hold 3 bonuses', icon: 'shield-half', color: '#2BB673', unlocked: (s) => s.maxedBonus },
+  { key: 'spark', title: 'Vonk', hint: '3 uur op rij', icon: 'flame-outline', color: '#FFB020', unlocked: (s) => s.best >= 3 },
+  { key: 'flame', title: 'Vlam', hint: '7 uur op rij', icon: 'flame', color: '#FF8A1F', unlocked: (s) => s.best >= 7 },
+  { key: 'blaze', title: 'Gloed', hint: '14 uur op rij', icon: 'flame', color: '#FF5A1F', unlocked: (s) => s.best >= 14 },
+  { key: 'inferno', title: 'Inferno', hint: '30 uur op rij', icon: 'bonfire', color: '#F03A2E', unlocked: (s) => s.best >= 30 },
+  { key: 'wildfire', title: 'Bosbrand', hint: '60 uur op rij', icon: 'bonfire', color: '#D61F69', unlocked: (s) => s.best >= 60 },
+  { key: 'legend', title: 'Legende', hint: '100 uur op rij', icon: 'trophy', color: '#F5B700', unlocked: (s) => s.best >= 100 },
+  { key: 'fullday', title: 'Volle dag', hint: 'Snap al je uren', icon: 'calendar', color: '#3FA9F5', unlocked: (s) => s.fullDay },
+  { key: 'early', title: 'Vroege vogel', hint: 'Snap voor 8u', icon: 'sunny', color: '#F5B700', unlocked: (s) => s.earlyBird },
+  { key: 'owl', title: 'Nachtuil', hint: 'Snap na 22u', icon: 'moon', color: '#8C6CF0', unlocked: (s) => s.nightOwl },
+  { key: 'saved', title: 'Gered!', hint: 'Een bonus redde je', icon: 'shield-checkmark', color: '#3FA9F5', unlocked: (s) => s.usedBonus },
+  { key: 'collector', title: 'Verzamelaar', hint: 'Heb 3 bonussen', icon: 'shield-half', color: '#2BB673', unlocked: (s) => s.maxedBonus },
   { key: 'hundred', title: '100 snaps', hint: 'Post 100 snaps', icon: 'camera', color: '#E2668F', unlocked: (s) => s.total >= 100 },
 ];

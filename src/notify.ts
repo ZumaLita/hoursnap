@@ -3,11 +3,11 @@ import { Platform } from 'react-native';
 import type { Schedule } from './schedule';
 
 const LINES = [
-  'What are you up to right now?',
-  'Quick, show everyone your moment.',
-  'Front and back, go!',
-  'Snap it or skip it, your call.',
-  "New hour, new snap. What's happening?",
+  'Wat ben je nu aan het doen?',
+  'Snel, toon iedereen je moment.',
+  'Voor en achter, go!',
+  'Snappen of overslaan, jij kiest.',
+  'Nieuw uur, nieuwe snap. Wat gebeurt er?',
 ];
 
 Notifications.setNotificationHandler({
@@ -31,7 +31,7 @@ export async function scheduleReminders(enabled: boolean, schedule: Schedule) {
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('snaps', {
-      name: 'Hourly snaps',
+      name: 'Snaps elk uur',
       importance: Notifications.AndroidImportance.HIGH,
       lightColor: '#4A3AFF',
     });
@@ -44,7 +44,7 @@ export async function scheduleReminders(enabled: boolean, schedule: Schedule) {
     if (!w.on) continue;
     for (let h = w.start; h <= w.end; h++) {
       await Notifications.scheduleNotificationAsync({
-        content: { title: '📸 HourSnap time', body: LINES[(h + weekday) % LINES.length], data: { hour: h } },
+        content: { title: '📸 HourSnap-tijd', body: LINES[(h + weekday) % LINES.length], data: { hour: h } },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.WEEKLY, weekday, hour: h, minute: 0, channelId: 'snaps' },
       });
     }

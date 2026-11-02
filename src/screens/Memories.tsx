@@ -8,7 +8,7 @@ import type { Me, Snap } from '../api';
 
 const dateLabel = (day: string) => {
   const [y, m, d] = day.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  return new Date(y, m - 1, d).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' });
 };
 
 export function Memories({
@@ -40,12 +40,12 @@ export function Memories({
       contentContainerStyle={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + TAB_BAR_HEIGHT + 104 }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[c.primary]} tintColor={c.primary} />}
     >
-      <TopBar title="Kept" />
+      <TopBar title="Bewaard" />
       <View style={{ marginTop: 8, marginBottom: 16 }}>
         <ButtonGroup
           items={[
-            { key: 'kept', label: 'Kept forever', icon: 'pin-outline' },
-            { key: 'mine', label: 'My week', icon: 'calendar-week' },
+            { key: 'kept', label: 'Voor altijd', icon: 'pin-outline' },
+            { key: 'mine', label: 'Van mij', icon: 'calendar-week' },
           ]}
           value={view}
           onChange={setView}
@@ -57,9 +57,9 @@ export function Memories({
           <Shape kind="clover" size={96} color={c.secondaryContainer}>
             <Icon name={view === 'kept' ? 'pin-outline' : 'image-multiple-outline'} size={40} color={c.onSecondaryContainer} />
           </Shape>
-          <Text style={[T.titleLarge, { color: c.onSurface, marginTop: 16 }]}>{view === 'kept' ? 'Nothing kept yet' : 'No snaps today'}</Text>
+          <Text style={[T.titleLarge, { color: c.onSurface, marginTop: 16 }]}>{view === 'kept' ? 'Nog niets bewaard' : 'Vandaag geen snaps'}</Text>
           <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 6, maxWidth: 300 }]}>
-            {view === 'kept' ? 'Tap Keep on any snap to save it forever. Everything else disappears after 24 hours.' : 'Snaps you take show up here for 24 hours.'}
+            {view === 'kept' ? 'Tik op het bladwijzertje bij een snap om hem voor altijd te bewaren. De rest verdwijnt na 24 uur.' : 'Je eigen snaps staan hier 24 uur lang.'}
           </Text>
         </View>
       ) : (
@@ -71,7 +71,7 @@ export function Memories({
               front={s.frontId}
               width={tileW}
               radius={i % 3 === 0 ? S.xl : S.lgInc}
-              label={view === 'kept' ? `${s.authorId === me.id ? 'You' : s.authorName} · ${dateLabel(s.day)}` : `${dateLabel(s.day)} · ${s.hour}u`}
+              label={view === 'kept' ? `${s.authorId === me.id ? 'Jij' : s.authorName} · ${dateLabel(s.day)}` : `${dateLabel(s.day)} · ${s.hour}u`}
               onPress={() => onOpen(list, s.$id)}
             />
           ))}

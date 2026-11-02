@@ -106,7 +106,7 @@ export function Camera({
 
   const post = async () => {
     if (!back || !front) return;
-    if (!to.length) return setError('Pick where to send it.');
+    if (!to.length) return setError('Kies waar je hem naartoe stuurt.');
     setStep('posting');
     setError('');
     try {
@@ -124,31 +124,31 @@ export function Camera({
     return (
       <View style={[styles.black, styles.center, { padding: 32 }]}>
         <Icon name="camera-outline" size={56} color="rgba(235,235,245,0.6)" />
-        <Text style={[T.headlineSmall, { color: '#FFFFFF', textAlign: 'center', marginTop: 16 }]}>Camera access</Text>
+        <Text style={[T.headlineSmall, { color: '#FFFFFF', textAlign: 'center', marginTop: 16 }]}>Toegang tot camera</Text>
         <Text style={[T.bodyLarge, { color: 'rgba(235,235,245,0.6)', textAlign: 'center', marginTop: 8 }]}>
-          HourSnap takes one photo with the back camera and one with the front.
+          HourSnap neemt één foto met de achtercamera en één met de voorcamera.
         </Text>
-        <Button title="Allow camera" big onPress={requestPerm} style={{ marginTop: 24, alignSelf: 'stretch' }} />
-        <Button title="Not now" variant="text" onPress={onClose} style={{ marginTop: 6, alignSelf: 'stretch' }} />
+        <Button title="Camera toestaan" big onPress={requestPerm} style={{ marginTop: 24, alignSelf: 'stretch' }} />
+        <Button title="Niet nu" variant="text" onPress={onClose} style={{ marginTop: 6, alignSelf: 'stretch' }} />
       </View>
     );
 
   const reviewing = step === 'review' || step === 'posting';
   const big = swapped ? front : back;
   const small = swapped ? back : front;
-  const label = step === 'back' ? 'Back camera' : step === 'front' ? 'Now smile' : onTime ? 'On time' : 'Extra snap';
+  const label = step === 'back' ? 'Achtercamera' : step === 'front' ? 'En nu lachen' : onTime ? 'Op tijd' : 'Extra snap';
 
   return (
     <View style={[styles.black, { paddingBottom: kb }]}>
         <View style={[styles.top, { paddingTop: insets.top + 4 }]}>
-          <Press onPress={onClose} radius={22} accessibilityLabel="Close" style={styles.circle}>
+          <Press onPress={onClose} radius={22} accessibilityLabel="Sluiten" style={styles.circle}>
             <Icon name="close" size={24} color="#FFFFFF" />
           </Press>
           <View style={[styles.mode, step === 'front' && { backgroundColor: '#FFD60A' }]}>
             <Text style={[T.labelMedium, { color: step === 'front' ? '#000' : '#FFD60A', letterSpacing: 0.5 }]}>{label}</Text>
           </View>
           {reviewing ? (
-            <Press onPress={retake} radius={22} accessibilityLabel="Retake" style={styles.circle}>
+            <Press onPress={retake} radius={22} accessibilityLabel="Opnieuw" style={styles.circle}>
               <Icon name="camera-retake-outline" size={22} color="#FFFFFF" />
             </Press>
           ) : (
@@ -174,7 +174,7 @@ export function Camera({
           )}
 
           {(back && step === 'front') || reviewing ? (
-            <Pressable style={styles.inset} onPress={() => reviewing && setSwapped((x) => !x)} accessibilityLabel="Swap photos">
+            <Pressable style={styles.inset} onPress={() => reviewing && setSwapped((x) => !x)} accessibilityLabel="Foto's wisselen">
               {reviewing ? small && <Image source={{ uri: small }} style={StyleSheet.absoluteFill} /> : back && <Image source={{ uri: back }} style={StyleSheet.absoluteFill} />}
             </Pressable>
           ) : null}
@@ -189,14 +189,14 @@ export function Camera({
         <View style={[styles.bottom, { paddingBottom: kb ? 10 : insets.bottom + 16 }]}>
           {!!error && <Text style={[T.bodyMedium, { color: '#FF8A80', textAlign: 'center' }]}>{error}</Text>}
           {!reviewing ? (
-            <Press onPress={shoot} disabled={step !== 'back'} squish={0.88} morph={24} radius={39} accessibilityLabel="Take snap" style={styles.shutter}>
+            <Press onPress={shoot} disabled={step !== 'back'} squish={0.88} morph={24} radius={39} accessibilityLabel="Snap nemen" style={styles.shutter}>
               <View style={styles.shutterInner} />
             </Press>
           ) : (
             <>
               {!kb && (
                 <View style={{ width: '100%' }}>
-                  <Text style={[T.labelMedium, { color: 'rgba(235,235,245,0.6)', marginBottom: 6 }]}>SEND TO</Text>
+                  <Text style={[T.labelMedium, { color: 'rgba(235,235,245,0.6)', marginBottom: 6 }]}>STUREN NAAR</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                     {groups.map((g) => {
                       const on = to.includes(g.$id);
@@ -207,7 +207,7 @@ export function Camera({
                           radius={18}
                           squish={0.92}
                           accessibilityState={{ selected: on }}
-                          accessibilityLabel={`Send to ${g.name}`}
+                          accessibilityLabel={`Sturen naar ${g.name}`}
                           style={[styles.to, on ? { backgroundColor: '#FFFFFF' } : null]}
                         >
                           <Icon name={on ? 'check' : g.kind === 'lab' ? 'school' : 'lock'} size={16} color={on ? '#000000' : '#FFFFFF'} />
@@ -226,7 +226,7 @@ export function Camera({
                   }}
                   radius={28}
                   squish={0.85}
-                  accessibilityLabel={once ? 'View once is on' : 'View once is off'}
+                  accessibilityLabel={once ? 'Eén keer bekijken staat aan' : 'Eén keer bekijken staat uit'}
                   accessibilityState={{ selected: once }}
                   style={[styles.once, once && { backgroundColor: 'rgba(255,214,10,0.18)' }]}
                 >
@@ -235,7 +235,7 @@ export function Camera({
                 <TextInput
                   value={caption}
                   onChangeText={setCaption}
-                  placeholder="Add a caption"
+                  placeholder="Schrijf er iets bij"
                   placeholderTextColor="rgba(235,235,245,0.45)"
                   maxLength={140}
                   returnKeyType="send"
@@ -246,16 +246,16 @@ export function Camera({
                   onPress={step === 'posting' ? undefined : post}
                   radius={28}
                   squish={0.88}
-                  accessibilityLabel="Send snap"
+                  accessibilityLabel="Snap versturen"
                   style={[styles.send, { backgroundColor: c.primary }]}
                 >
                   {step === 'posting' ? <ActivityIndicator color={c.onPrimary} /> : <Icon name="send" size={24} color={c.onPrimary} />}
                 </Press>
               </View>
               {once ? (
-                <Text style={[T.bodySmall, { color: '#FFD60A', textAlign: 'center' }]}>View once: everyone can open it one time. Not in memories.</Text>
+                <Text style={[T.bodySmall, { color: '#FFD60A', textAlign: 'center' }]}>Eén keer bekijken: iedereen kan hem één keer openen. Niet bij herinneringen.</Text>
               ) : (
-                !kb && <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.55)' }]}>Tap 1 for view once · tap the small photo to swap</Text>
+                !kb && <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.55)' }]}>Tik op 1 voor één keer bekijken · tik op de kleine foto om te wisselen</Text>
               )}
             </>
           )}

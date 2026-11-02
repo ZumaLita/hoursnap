@@ -63,16 +63,16 @@ export function MeScreen({
   const [busy, setBusy] = useState(false);
 
   const savePin = async () => {
-    if (newPin.length !== PIN_LENGTH) return setPinMsg(`Your new PIN needs ${PIN_LENGTH} digits.`);
+    if (newPin.length !== PIN_LENGTH) return setPinMsg(`Je nieuwe pincode heeft ${PIN_LENGTH} cijfers nodig.`);
     setBusy(true);
     setPinMsg('');
     try {
       await changePin(oldPin, newPin);
-      setPinMsg('PIN changed. Save it somewhere safe!');
+      setPinMsg('Pincode gewijzigd. Bewaar hem op een veilige plek!');
       setOldPin('');
       setNewPin('');
     } catch (e) {
-      setPinMsg(/invalid|password/i.test(String((e as Error).message)) ? 'Your current PIN is wrong.' : niceError(e));
+      setPinMsg(/invalid|password/i.test(String((e as Error).message)) ? 'Je huidige pincode klopt niet.' : niceError(e));
     } finally {
       setBusy(false);
     }
@@ -84,10 +84,10 @@ export function MeScreen({
       contentContainerStyle={[s.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + TAB_BAR_HEIGHT + 104 }]}
       keyboardShouldPersistTaps="handled"
     >
-      <TopBar title="Me" />
+      <TopBar title="Ik" />
 
       <Card style={[s.profile, { backgroundColor: c.secondaryContainer }]}>
-        <Pressable onPress={() => onPickAvatar().catch(() => {})} accessibilityLabel="Change profile photo">
+        <Pressable onPress={() => onPickAvatar().catch(() => {})} accessibilityLabel="Profielfoto wijzigen">
           <Avatar id={me.id} name={me.name} size={72} photo={avatarId} />
           <View style={{ position: 'absolute', right: -2, bottom: -2, width: 28, height: 28, borderRadius: 14, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: c.secondaryContainer }}>
             <Icon name="camera" size={14} color={c.onPrimary} />
@@ -95,15 +95,15 @@ export function MeScreen({
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text style={[T.headlineSmall, { color: c.onSecondaryContainer }]}>@{me.name}</Text>
-          <Text style={[T.bodyMedium, { color: c.onSecondaryContainer, opacity: 0.8 }]}>{me.admin ? 'HourSnap admin' : `${members.filter((m) => !m.banned).length} people on HourSnap`}</Text>
+          <Text style={[T.bodyMedium, { color: c.onSecondaryContainer, opacity: 0.8 }]}>{me.admin ? 'HourSnap-admin' : `${members.filter((m) => !m.banned).length} mensen op HourSnap`}</Text>
         </View>
       </Card>
 
       <View style={s.stats}>
         {[
-          [mine.length, 'Last 24h', 'camera-outline'],
-          [kept.length, 'Kept', 'star-outline'],
-          [reactionsGot, 'Reactions', 'emoticon-outline'],
+          [mine.length, 'Laatste 24u', 'camera-outline'],
+          [kept.length, 'Bewaard', 'star-outline'],
+          [reactionsGot, 'Reacties', 'emoticon-outline'],
         ].map(([n, l, icon]) => (
           <Card key={String(l)} tone="base" style={s.stat}>
             <Icon name={icon as never} size={20} color={c.primary} />
@@ -113,18 +113,18 @@ export function MeScreen({
         ))}
       </View>
 
-      <SectionLabel>Look</SectionLabel>
+      <SectionLabel>Uiterlijk</SectionLabel>
       <Card tone="low" style={{ padding: 16 }}>
         <ButtonGroup<Appearance>
           items={[
-            { key: 'auto', label: 'System' },
-            { key: 'light', label: 'Light' },
-            { key: 'dark', label: 'Dark' },
+            { key: 'auto', label: 'Systeem' },
+            { key: 'light', label: 'Licht' },
+            { key: 'dark', label: 'Donker' },
           ]}
           value={appearance}
           onChange={onAppearance}
         />
-        <Text style={[T.labelLarge, { color: c.onSurfaceVariant, marginTop: 20, marginBottom: 12 }]}>Colour</Text>
+        <Text style={[T.labelLarge, { color: c.onSurfaceVariant, marginTop: 20, marginBottom: 12 }]}>Kleur</Text>
         <View style={s.swatches}>
           {ACCENT_ORDER.map((k) => {
             const on = k === accentKey;
@@ -147,7 +147,7 @@ export function MeScreen({
         </View>
       </Card>
 
-      <SectionLabel>My photo style</SectionLabel>
+      <SectionLabel>Mijn fotostijl</SectionLabel>
       <Card tone="low">
         {PHOTO_STYLES.map((p) => (
           <ListItem
@@ -161,28 +161,28 @@ export function MeScreen({
         ))}
       </Card>
 
-      <SectionLabel>When I can snap</SectionLabel>
+      <SectionLabel>Wanneer ik kan snappen</SectionLabel>
       <Card tone="low" style={{ marginBottom: 12 }}>
         <ListItem
           icon="beach"
-          title="I'm on holiday"
-          supporting={schedule.onHoliday ? 'Using your holiday hours every day' : 'Turn on during school holidays'}
-          trailing={<Switch value={schedule.onHoliday} onChange={(v) => onSchedule({ ...schedule, onHoliday: v })} label="On holiday" />}
+          title="Ik heb vakantie"
+          supporting={schedule.onHoliday ? 'Je vakantie-uren gelden elke dag' : 'Zet aan tijdens de schoolvakanties'}
+          trailing={<Switch value={schedule.onHoliday} onChange={(v) => onSchedule({ ...schedule, onHoliday: v })} label="Vakantie" />}
         />
         <ListItem
           icon="bell-outline"
-          title="Hourly reminders"
-          supporting={remindersSupported ? 'A nudge at the start of every hour you picked' : 'Only in the Android app'}
-          trailing={<Switch value={reminders && remindersSupported} disabled={!remindersSupported} onChange={onReminders} label="Hourly reminders" />}
+          title="Seintje elk uur"
+          supporting={remindersSupported ? 'Een melding aan het begin van elk gekozen uur' : 'Alleen in de Android-app'}
+          trailing={<Switch value={reminders && remindersSupported} disabled={!remindersSupported} onChange={onReminders} label="Seintje elk uur" />}
         />
       </Card>
-      <HoursCard icon="school-outline" title="School days" hint="Monday to Friday" w={schedule.weekday} onChange={(w) => onSchedule({ ...schedule, weekday: w })} />
-      <HoursCard icon="sofa-outline" title="Weekends" hint="Saturday and Sunday" w={schedule.weekend} onChange={(w) => onSchedule({ ...schedule, weekend: w })} />
-      <HoursCard icon="beach" title="Holidays" hint="Used when 'I'm on holiday' is on" w={schedule.holiday} onChange={(w) => onSchedule({ ...schedule, holiday: w })} />
+      <HoursCard icon="school-outline" title="Schooldagen" hint="Maandag tot vrijdag" w={schedule.weekday} onChange={(w) => onSchedule({ ...schedule, weekday: w })} />
+      <HoursCard icon="sofa-outline" title="Weekend" hint="Zaterdag en zondag" w={schedule.weekend} onChange={(w) => onSchedule({ ...schedule, weekend: w })} />
+      <HoursCard icon="beach" title="Vakantie" hint="Als 'Ik heb vakantie' aan staat" w={schedule.holiday} onChange={(w) => onSchedule({ ...schedule, holiday: w })} />
 
       {me.admin && (
         <>
-          <SectionLabel>Admin: people</SectionLabel>
+          <SectionLabel>Admin: mensen</SectionLabel>
           <Card tone="low">
             {members
               .filter((m) => m.id !== me.id)
@@ -191,48 +191,48 @@ export function MeScreen({
                   key={m.id}
                   icon={m.banned ? 'account-cancel-outline' : 'account-outline'}
                   title={`@${m.username}`}
-                  supporting={m.banned ? 'Removed: their snaps are hidden' : 'Active'}
+                  supporting={m.banned ? 'Verwijderd: kan niet meer inloggen' : 'Actief'}
                   trailing={
                     <Button
-                      title={m.banned ? 'Let back in' : 'Remove'}
+                      title={m.banned ? 'Terug toelaten' : 'Verwijderen'}
                       variant={m.banned ? 'tonal' : 'outlined'}
                       onPress={() => {
                         const go = () => onBan(m.id, !m.banned);
                         if (m.banned || Platform.OS !== 'web') go();
-                        else if (window.confirm(`Remove ${m.name}? Their snaps get hidden.`)) go();
+                        else if (window.confirm(`${m.username} verwijderen? Die kan dan niet meer inloggen.`)) go();
                       }}
                     />
                   }
                 />
               ))}
-            {members.length <= 1 && <ListItem icon="account-multiple-outline" title="Nobody else yet" supporting="People show up here when they join." />}
+            {members.length <= 1 && <ListItem icon="account-multiple-outline" title="Nog niemand anders" supporting="Mensen verschijnen hier als ze lid worden." />}
           </Card>
         </>
       )}
 
       <SectionLabel>Account</SectionLabel>
       <Card tone="low">
-        {canInstall() && <ListItem icon="cellphone-arrow-down" title="Add to home screen" supporting="Open HourSnap like a real app" onPress={showInstallHelp} />}
-        <ListItem icon="key-outline" title="Change PIN" supporting={`${PIN_LENGTH} digits`} onPress={() => setPinOpen((o) => !o)} trailing={<Icon name={pinOpen ? 'chevron-up' : 'chevron-down'} size={24} color={c.onSurfaceVariant} />} />
+        {canInstall() && <ListItem icon="cellphone-arrow-down" title="Op je beginscherm zetten" supporting="Open HourSnap als een echte app" onPress={showInstallHelp} />}
+        <ListItem icon="key-outline" title="Pincode wijzigen" supporting={`${PIN_LENGTH} cijfers`} onPress={() => setPinOpen((o) => !o)} trailing={<Icon name={pinOpen ? 'chevron-up' : 'chevron-down'} size={24} color={c.onSurfaceVariant} />} />
         {pinOpen && (
           <View style={{ padding: 16, paddingTop: 4, gap: 12 }}>
-            <TextInput style={s.input} placeholder="Current PIN" placeholderTextColor={c.onSurfaceVariant} secureTextEntry keyboardType="number-pad" value={oldPin} onChangeText={(t) => setOldPin(t.replace(/\D/g, ''))} maxLength={8} />
-            <TextInput style={s.input} placeholder="New PIN" placeholderTextColor={c.onSurfaceVariant} secureTextEntry keyboardType="number-pad" value={newPin} onChangeText={(t) => setNewPin(t.replace(/\D/g, ''))} maxLength={8} />
+            <TextInput style={s.input} placeholder="Huidige pincode" placeholderTextColor={c.onSurfaceVariant} secureTextEntry keyboardType="number-pad" value={oldPin} onChangeText={(t) => setOldPin(t.replace(/\D/g, ''))} maxLength={8} />
+            <TextInput style={s.input} placeholder="Nieuwe pincode" placeholderTextColor={c.onSurfaceVariant} secureTextEntry keyboardType="number-pad" value={newPin} onChangeText={(t) => setNewPin(t.replace(/\D/g, ''))} maxLength={8} />
             {!!pinMsg && <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]}>{pinMsg}</Text>}
-            <Button title="Save PIN" busy={busy} onPress={savePin} style={{ alignSelf: 'flex-start' }} />
+            <Button title="Pincode opslaan" busy={busy} onPress={savePin} style={{ alignSelf: 'flex-start' }} />
           </View>
         )}
         <ListItem
           icon="logout"
-          title="Log out"
+          title="Uitloggen"
           danger
           onPress={() => {
-            if (Platform.OS === 'web' ? window.confirm('Log out of HourSnap?') : true) onLogout();
+            if (Platform.OS === 'web' ? window.confirm('Uitloggen uit HourSnap?') : true) onLogout();
           }}
         />
       </Card>
 
-      <Text style={[T.bodySmall, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 24 }]}>HourSnap · by Storm Gees</Text>
+      <Text style={[T.bodySmall, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 24 }]}>HourSnap · door Storm Gees</Text>
     </ScrollView>
   );
 }

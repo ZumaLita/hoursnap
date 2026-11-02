@@ -9,9 +9,9 @@ export type Tab = 'home' | 'streaks' | 'memories' | 'me';
 const ITEMS: { key: Tab | 'snap'; icon: IconName; on: IconName; label: string }[] = [
   { key: 'home', icon: 'home-outline', on: 'home', label: 'Feed' },
   { key: 'streaks', icon: 'fire', on: 'fire', label: 'Streaks' },
-  { key: 'snap', icon: 'camera-iris', on: 'camera-iris', label: 'Take a snap' },
-  { key: 'memories', icon: 'pin-outline', on: 'pin', label: 'Kept' },
-  { key: 'me', icon: 'account-outline', on: 'account', label: 'Me' },
+  { key: 'snap', icon: 'camera-iris', on: 'camera-iris', label: 'Snap nemen' },
+  { key: 'memories', icon: 'pin-outline', on: 'pin', label: 'Bewaard' },
+  { key: 'me', icon: 'account-outline', on: 'account', label: 'Ik' },
 ];
 
 export const TAB_BAR_HEIGHT = 72;
