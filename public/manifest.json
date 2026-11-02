@@ -1,0 +1,13 @@
+{
+  "name": "HourSnap",
+  "short_name": "HourSnap",
+  "description": "Hourly family snaps",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#4A3AFF",
+  "theme_color": "#4A3AFF",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

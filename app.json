@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "HourSnap",
+    "slug": "hoursnap",
+    "scheme": "hoursnap",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "be.ictstorm.hoursnap"
+    },
+    "android": {
+      "package": "be.ictstorm.hoursnap",
+      "adaptiveIcon": {
+        "backgroundColor": "#4A3AFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["CAMERA", "POST_NOTIFICATIONS"],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "name": "HourSnap",
+      "backgroundColor": "#0B0C10",
+      "themeColor": "#0B0C10",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "HourSnap uses your camera to take your hourly snap.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#E2668F"
+        }
+      ]
+    ]
+  }
+}

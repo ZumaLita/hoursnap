@@ -1,0 +1,45 @@
+{
+  "name": "hoursnap",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
+    "@expo-google-fonts/caveat": "^0.4.2",
+    "@expo-google-fonts/vt323": "^0.4.1",
+    "@expo/metro-runtime": "~58.0.16",
+    "@expo/vector-icons": "^15.0.2",
+    "appwrite": "^29.2.0",
+    "buffer": "^6.0.3",
+    "expo": "~58.0.22",
+    "expo-blur": "~58.0.5",
+    "expo-camera": "~58.0.14",
+    "expo-constants": "~58.0.14",
+    "expo-file-system": "~58.0.13",
+    "expo-font": "~58.0.11",
+    "expo-haptics": "~58.0.7",
+    "expo-image-manipulator": "~58.0.16",
+    "expo-linear-gradient": "~58.0.3",
+    "expo-notifications": "~58.1.7",
+    "expo-secure-store": "~58.0.2",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-appwrite": "^3.1.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-svg": "15.16.0",
+    "react-native-url-polyfill": "^4.0.0",
+    "react-native-web": "~0.21.4"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "private": true
+}

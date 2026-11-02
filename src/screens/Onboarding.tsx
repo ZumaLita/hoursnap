@@ -1,0 +1,271 @@
+import React, { useState } from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button, ButtonGroup, Icon, Switch, haptic } from '../components/ui';
+import { PHOTO_STYLES, Print, type PhotoStyle } from '../components/Print';
+import { ACCENTS, ACCENT_ORDER, FONTS, S, T, useTheme, type AccentKey, type Appearance } from '../theme';
+import { remindersSupported } from '../notify';
+import { type Schedule, type Window } from '../schedule';
+
+const SAMPLE_BACK = require('../../assets/sample-back.jpg');
+const SAMPLE_FRONT = require('../../assets/sample-front.jpg');
+
+function Stepper({ value, min, max, onChange }: { value: number; min: number; max: number; onChange: (v: number) => void }) {
+  const c = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <Pressable onPress={() => value > min && onChange(value - 1)} accessibilityLabel="Earlier" style={[st.step, { backgroundColor: c.surfaceContainerHigh }]}>
+        <Icon name="minus" size={18} color={c.onSurface} />
+      </Pressable>
+      <Text style={[T.titleMedium, T.num, { color: c.onSurface, minWidth: 40, textAlign: 'center' }]}>{value}u</Text>
+      <Pressable onPress={() => value < max && onChange(value + 1)} accessibilityLabel="Later" style={[st.step, { backgroundColor: c.surfaceContainerHigh }]}>
+        <Icon name="plus" size={18} color={c.onSurface} />
+      </Pressable>
+    </View>
+  );
+}
+
+export function HoursCard({ icon, title, hint, w, onChange }: { icon: React.ComponentProps<typeof Icon>['name']; title: string; hint: string; w: Window; onChange: (w: Window) => void }) {
+  const c = useTheme();
+  return (
+    <View style={[st.hours, { backgroundColor: c.surfaceContainerLow }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={[st.pointIcon, { backgroundColor: c.secondaryContainer, width: 40, height: 40 }]}>
+          <Icon name={icon} size={22} color={c.onSecondaryContainer} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[T.titleMedium, { color: c.onSurface }]}>{title}</Text>
+          <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]}>{hint}</Text>
+        </View>
+        <Switch value={w.on} onChange={(on) => onChange({ ...w, on })} label={`${title} snapping`} />
+      </View>
+      {w.on ? (
+        <View style={st.hoursRow}>
+          <Text style={[T.labelLarge, { color: c.onSurfaceVariant }]}>From</Text>
+          <Stepper value={w.start} min={5} max={w.end} onChange={(v) => onChange({ ...w, start: v })} />
+          <Text style={[T.labelLarge, { color: c.onSurfaceVariant }]}>to</Text>
+          <Stepper value={w.end} min={w.start} max={23} onChange={(v) => onChange({ ...w, end: v })} />
+        </View>
+      ) : (
+        <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, marginTop: 10 }]}>No snaps and no reminders on these days.</Text>
+      )}
+    </View>
+  );
+}
+
+export function Onboarding({
+  name,
+  appearance,
+  accentKey,
+  photoStyle,
+  schedule,
+  onSchedule,
+  onAppearance,
+  onAccent,
+  onPhotoStyle,
+  onDone,
+}: {
+  name: string;
+  appearance: Appearance;
+  accentKey: AccentKey;
+  photoStyle: PhotoStyle;
+  schedule: Schedule;
+  onSchedule: (s: Schedule) => void;
+  onAppearance: (a: Appearance) => void;
+  onAccent: (k: AccentKey) => void;
+  onPhotoStyle: (p: PhotoStyle) => void;
+  onDone: (reminders: boolean) => void;
+}) {
+  const c = useTheme();
+  const insets = useSafeAreaInsets();
+  const steps = remindersSupported ? 5 : 4;
+  const [step, setStep] = useState(0);
+  const sample = (w: number) => (which: 'big' | 'small', size: { width: number; height: number; borderRadius?: number }) => (
+    <Image source={which === 'big' ? SAMPLE_BACK : SAMPLE_FRONT} style={[size, { width: size.width, height: size.height }]} resizeMode="cover" />
+  );
+  const last = step === steps - 1;
+  const next = () => (last ? onDone(false) : setStep(step + 1));
+
+  return (
+    <View style={{ flex: 1, backgroundColor: c.surface, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 16 }}>
+      <View style={st.dots}>
+        {Array.from({ length: steps }, (_, i) => (
+          <View key={i} style={[st.dot, { backgroundColor: i <= step ? c.primary : c.surfaceContainerHigh, width: i === step ? 28 : 8 }]} />
+        ))}
+      </View>
+
+      <ScrollView contentContainerStyle={st.body} showsVerticalScrollIndicator={false}>
+        {step === 0 && (
+          <>
+            <Text style={[T.displayMedium, { color: c.onSurface }]}>Hi {name}</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 10 }]}>Here's how HourSnap works.</Text>
+            {(
+              [
+                ['clock-outline', 'Every hour', 'In the hours you pick, you get a little nudge to show what you\'re doing.'],
+                ['camera-flip-outline', 'Both cameras', 'One photo of what you see, then a quick selfie. Together they make one snap.'],
+                ['hand-okay', 'Never forced', 'Skip any hour you like. Snap extra whenever something fun happens.'],
+                ['timer-sand', 'Gone in 24 hours', 'Snaps disappear after a day, unless someone keeps them. Mean stuff can be reported.'],
+              ] as const
+            ).map(([icon, title, text]) => (
+              <View key={title} style={[st.point, { backgroundColor: c.surfaceContainerLow }]}>
+                <View style={[st.pointIcon, { backgroundColor: c.secondaryContainer }]}>
+                  <Icon name={icon} size={24} color={c.onSecondaryContainer} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[T.titleMedium, { color: c.onSurface }]}>{title}</Text>
+                  <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>{text}</Text>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Make it yours</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>Light or dark, and your colour. You can change this later under Me.</Text>
+            <ButtonGroup<Appearance>
+              items={[
+                { key: 'auto', label: 'Phone' },
+                { key: 'light', label: 'Light' },
+                { key: 'dark', label: 'Dark' },
+              ]}
+              value={appearance}
+              onChange={onAppearance}
+            />
+            <View style={st.colours}>
+              {ACCENT_ORDER.map((k) => {
+                const on = k === accentKey;
+                const col = ACCENTS[k][c.dark ? 'dark' : 'light'];
+                return (
+                  <Pressable
+                    key={k}
+                    onPress={() => {
+                      haptic();
+                      onAccent(k);
+                    }}
+                    accessibilityLabel={`${ACCENTS[k].name} colour`}
+                    accessibilityState={{ selected: on }}
+                    style={st.colourItem}
+                  >
+                    <View style={[st.swatch, { backgroundColor: col, borderColor: on ? c.onSurface : 'transparent', borderRadius: on ? S.lg : 32 }]}>
+                      {on && <Icon name="check" size={24} color={c.dark ? '#0E1322' : '#FFFFFF'} />}
+                    </View>
+                    <Text style={[T.labelMedium, { color: on ? c.onSurface : c.onSurfaceVariant, fontFamily: on ? FONTS.xb : FONTS.sb }]}>{ACCENTS[k].name}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={[st.previewBar, { backgroundColor: c.surfaceContainerLow }]}>
+              <View style={[st.previewBtn, { backgroundColor: c.primary }]}>
+                <Icon name="camera-iris" size={22} color={c.onPrimary} />
+              </View>
+              <Text style={[T.titleMedium, { color: c.onSurface, flex: 1 }]}>This is your snap button</Text>
+            </View>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Your photo style</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>This is how your snaps look for everyone.</Text>
+            <View style={st.styles}>
+              {PHOTO_STYLES.map((p) => {
+                const on = p.key === photoStyle;
+                return (
+                  <Pressable
+                    key={p.key}
+                    onPress={() => {
+                      haptic();
+                      onPhotoStyle(p.key);
+                    }}
+                    accessibilityLabel={p.name}
+                    accessibilityState={{ selected: on }}
+                    style={[st.styleCard, { backgroundColor: on ? c.secondaryContainer : c.surfaceContainerHigh, borderColor: on ? c.primary : 'transparent' }]}
+                  >
+                    <View style={st.styleArt} pointerEvents="none">
+                      <Print style={p.key} width={118} id={p.key} date={new Date()} hour={new Date().getHours()} caption={p.key === 'tape' ? 'Hoi!' : null} image={sample(118)} />
+                    </View>
+                    <View style={st.styleText}>
+                      <Text style={[T.titleSmall, { color: c.onSurface, flex: 1 }]}>{p.name}</Text>
+                      {on && <Icon name="check-circle" size={20} color={c.primary} />}
+                    </View>
+                    <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]} numberOfLines={2}>
+                      {p.hint}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>When can you snap?</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>
+              Pick the hours that work for you. No phones in class? Then start after school. Your streak only counts these hours.
+            </Text>
+            <HoursCard icon="school-outline" title="School days" hint="Monday to Friday" w={schedule.weekday} onChange={(w) => onSchedule({ ...schedule, weekday: w })} />
+            <HoursCard icon="sofa-outline" title="Weekends" hint="Saturday and Sunday" w={schedule.weekend} onChange={(w) => onSchedule({ ...schedule, weekend: w })} />
+            <HoursCard icon="beach" title="Holidays" hint="Turn on 'On holiday' under Me" w={schedule.holiday} onChange={(w) => onSchedule({ ...schedule, holiday: w })} />
+          </>
+        )}
+
+        {step === 4 && remindersSupported && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>A nudge every hour?</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>
+              HourSnap can remind you at the start of every hour you picked. Snapping stays optional, and you can change it under Me.
+            </Text>
+            <View style={[st.notif, { backgroundColor: c.surfaceContainerLow }]}>
+              <View style={[st.notifIcon, { backgroundColor: c.primary }]}>
+                <Icon name="camera-iris" size={18} color={c.onPrimary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[T.titleSmall, { color: c.onSurface }]}>📸 HourSnap time</Text>
+                <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>What are you up to right now?</Text>
+              </View>
+              <Text style={[T.bodySmall, { color: c.onSurfaceVariant }]}>now</Text>
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      <View style={st.footer}>
+        {step > 0 ? <Button title="Back" variant="text" onPress={() => setStep(step - 1)} /> : <View />}
+        {last && remindersSupported ? (
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Button title="Not now" variant="text" onPress={() => onDone(false)} />
+            <Button title="Turn on" icon="bell-ring-outline" big onPress={() => onDone(true)} />
+          </View>
+        ) : (
+          <Button title={last ? 'Start snapping' : 'Next'} icon={last ? 'camera-iris' : 'arrow-right'} big onPress={next} />
+        )}
+      </View>
+    </View>
+  );
+}
+
+const st = StyleSheet.create({
+  dots: { flexDirection: 'row', gap: 6, justifyContent: 'center', paddingVertical: 8 },
+  dot: { height: 8, borderRadius: 4 },
+  body: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 24, maxWidth: 560, width: '100%', alignSelf: 'center' },
+  point: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, borderRadius: S.lgInc, marginTop: 12 },
+  pointIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  colours: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 28 },
+  colourItem: { alignItems: 'center', gap: 8 },
+  swatch: { width: 56, height: 56, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  previewBar: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, borderRadius: S.full, marginTop: 32 },
+  previewBtn: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  styles: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  styleCard: { width: '47.5%', borderRadius: S.lgInc, borderWidth: 2.5, padding: 12, paddingBottom: 14 },
+  styleArt: { height: 250, alignItems: 'center', justifyContent: 'center', paddingTop: 10 },
+  styleText: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  hours: { padding: 14, borderRadius: S.lgInc, marginBottom: 12 },
+  hoursRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, flexWrap: 'wrap', gap: 6 },
+  step: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  notif: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: S.lgInc },
+  notifIcon: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8, maxWidth: 560, width: '100%', alignSelf: 'center' },
+});
