@@ -1,9 +1,11 @@
 import { BUCKET_ID, DB_ID, KEEP_HOURS, PROFILES_TABLE, SNAPS_TABLE, loginEmail, loginPassword, phoneFromEmail } from './config';
-import { ID, Permission, Query, Role, account, imageDataUri, storage, tables, uploadImage } from './sdk';
+import { ID, Permission, Query, Role, account, functions, imageDataUri, storage, tables, uploadImage } from './sdk';
 import { DEFAULT_SCHEDULE, decodeWindow, encodeWindow, type Schedule } from './schedule';
 
 export type Me = { id: string; name: string; admin: boolean };
-export type Member = { id: string; name: string; schedule: Schedule; banned: boolean };
+export type Member = { id: string; name: string; username: string; avatarId: string | null; lab: boolean; schedule: Schedule; banned: boolean };
+export type Group = { $id: string; name: string; kind: 'lab' | 'room'; ownerId?: string | null; members: string[] };
+export const LAB_ID = 'lab';
 export type Snap = {
   $id: string;
   $createdAt: string;
@@ -22,10 +24,10 @@ export type Snap = {
   /** View once: others can open it a single time, it never shows in the feed or memories. */
   viewOnce?: boolean | null;
   viewedBy?: string[] | null;
+  groups?: string[] | null;
 };
 
 const everyone = Role.users();
-const admin = Role.label('admin');
 const keepMs = KEEP_HOURS * 3600e3;
 
 export const dayKey = (d = new Date()) =>
@@ -38,6 +40,17 @@ export function niceError(e: unknown) {
   if (/user_count_exceeded|limit/i.test(msg) && /user/i.test(msg)) return 'HourSnap is full. Ask Storm to make room.';
   if (/network|fetch/i.test(msg)) return "Couldn't reach the server. Check your internet.";
   return msg;
+}
+
+// ---------- server function (sharing with other people happens there) ----------
+async function call<T>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
+  const ex = await functions.createExecution({ functionId: 'api', body: JSON.stringify({ action, ...payload }), async: false });
+  let out: { error?: string } & Record<string, unknown> = {};
+  try {
+    out = JSON.parse(ex.responseBody || '{}');
+  } catch {}
+  if (ex.responseStatusCode >= 400 || out.error) throw new Error(out.error || 'Something went wrong. Try again.');
+  return out as T;
 }
 
 // ---------- account ----------
@@ -89,12 +102,23 @@ export async function signup(phone: string, pin: string): Promise<Me> {
   return me;
 }
 
-/** Sets the name everyone sees, and makes the profile row. */
-export async function setName(me: Me, name: string, schedule: Schedule = DEFAULT_SCHEDULE): Promise<Me> {
-  const u = await account.updateName({ name: name.trim() });
-  const next = { ...me, name: u.name };
-  await saveProfile(next, schedule);
-  return next;
+export const USERNAME_RE = /^[a-z0-9._]{3,20}$/;
+export const cleanUsername = (t: string) => t.toLowerCase().replace(/^@/, '').replace(/[^a-z0-9._]/g, '').slice(0, 20);
+
+/** Picks the unique @username everyone sees, and makes the profile row. */
+export async function setUsername(me: Me, username: string, schedule: Schedule = DEFAULT_SCHEDULE): Promise<Me> {
+  const u = cleanUsername(username);
+  if (!USERNAME_RE.test(u)) throw new Error('3 to 20 letters, numbers, dots or _');
+  const taken = await tables.listRows({ databaseId: DB_ID, tableId: PROFILES_TABLE, queries: [Query.equal('username', u), Query.limit(1)] });
+  if (taken.rows.some((r) => r.$id !== me.id)) throw new Error(`@${u} is already taken. Try another one.`);
+  try {
+    await saveProfile({ ...me, name: u }, schedule, { username: u });
+  } catch (e) {
+    if (/unique|already exists|duplicate/i.test(String((e as Error).message))) throw new Error(`@${u} is already taken. Try another one.`);
+    throw e;
+  }
+  await account.updateName({ name: u });
+  return { ...me, name: u };
 }
 
 export async function logout() {
@@ -107,10 +131,13 @@ export async function changePin(oldPin: string, newPin: string) {
 }
 
 // ---------- people ----------
-type ProfileRow = { $id: string; name: string; weekday?: string; weekend?: string; holiday?: string; onHoliday?: boolean; banned?: boolean };
+type ProfileRow = { $id: string; name: string; username?: string | null; avatarId?: string | null; lab?: boolean; weekday?: string; weekend?: string; holiday?: string; onHoliday?: boolean; banned?: boolean };
 const toMember = (r: ProfileRow): Member => ({
   id: r.$id,
-  name: r.name,
+  name: r.username || r.name,
+  username: r.username || r.name,
+  avatarId: r.avatarId || null,
+  lab: !!r.lab,
   banned: !!r.banned,
   schedule: {
     weekday: decodeWindow(r.weekday, DEFAULT_SCHEDULE.weekday),
@@ -125,8 +152,9 @@ export async function listMembers(): Promise<Member[]> {
   return (r.rows as unknown as ProfileRow[]).map(toMember);
 }
 
-export async function saveProfile(me: Me, s: Schedule) {
+export async function saveProfile(me: Me, s: Schedule, extra: Record<string, unknown> = {}) {
   const data = {
+    ...extra,
     name: me.name,
     weekday: encodeWindow(s.weekday),
     weekend: encodeWindow(s.weekend),
@@ -141,14 +169,51 @@ export async function saveProfile(me: Me, s: Schedule) {
       tableId: PROFILES_TABLE,
       rowId: me.id,
       data: { ...data, banned: false },
-      permissions: [Permission.read(everyone), Permission.update(Role.user(me.id)), Permission.update(admin), Permission.delete(admin)],
+      permissions: [Permission.read(everyone), Permission.update(Role.user(me.id))],
     });
   }
 }
 
-/** Admin only: hide someone from HourSnap (or let them back in). */
+/** Admin only: block someone from HourSnap (or let them back in). */
 export async function setBanned(memberId: string, banned: boolean) {
-  await tables.updateRow({ databaseId: DB_ID, tableId: PROFILES_TABLE, rowId: memberId, data: { banned } });
+  await call('admin.ban', { userId: memberId, banned });
+}
+
+export async function joinLab(me: Me) {
+  await tables.updateRow({ databaseId: DB_ID, tableId: PROFILES_TABLE, rowId: me.id, data: { lab: true } });
+}
+
+/** Find people by @username to add to a room. */
+export async function searchPeople(q: string, meId: string): Promise<Member[]> {
+  const t = cleanUsername(q);
+  if (!t) return [];
+  const r = await tables.listRows({ databaseId: DB_ID, tableId: PROFILES_TABLE, queries: [Query.startsWith('username', t), Query.limit(12)] });
+  return (r.rows as unknown as ProfileRow[]).map(toMember).filter((m) => m.id !== meId && !m.banned);
+}
+
+/** Profile photo: readable by everyone logged in. */
+export async function setAvatar(me: Me, uri: string, old: string | null): Promise<string> {
+  const id = await uploadImage(uri, `avatar-${Date.now()}.jpg`, [Permission.read(everyone), Permission.delete(Role.user(me.id))]);
+  await tables.updateRow({ databaseId: DB_ID, tableId: PROFILES_TABLE, rowId: me.id, data: { avatarId: id } });
+  if (old) storage.deleteFile({ bucketId: BUCKET_ID, fileId: old }).catch(() => {});
+  return id;
+}
+
+// ---------- groups: LAB for everyone, private rooms of max 5 ----------
+export const MAX_ROOM = 5;
+export async function listGroups(): Promise<Group[]> {
+  const r = await tables.listRows({ databaseId: DB_ID, tableId: 'groups', queries: [Query.limit(100)] });
+  const rows = r.rows as unknown as Group[];
+  return [...rows.filter((g) => g.kind === 'lab'), ...rows.filter((g) => g.kind === 'room').sort((a, b) => a.name.localeCompare(b.name))];
+}
+export async function createRoom(name: string, memberIds: string[]) {
+  return (await call<{ room: Group }>('room.create', { name, memberIds })).room;
+}
+export async function updateRoom(roomId: string, change: { name?: string; memberIds?: string[] }) {
+  return (await call<{ room: Group }>('room.update', { roomId, ...change })).room;
+}
+export async function leaveRoom(roomId: string) {
+  await call('room.leave', { roomId });
 }
 
 // ---------- snaps ----------
@@ -189,34 +254,28 @@ export async function listKeptSnaps(userId: string): Promise<Snap[]> {
   return (r.rows as unknown as Snap[]).filter((x) => x.backId !== EXPIRED);
 }
 
-export async function postSnap(me: Me, backUri: string, frontUri: string, caption: string, onTime: boolean, style = 'tape', viewOnce = false): Promise<Snap> {
-  const filePerms = [Permission.read(everyone), Permission.delete(Role.user(me.id)), Permission.delete(admin)];
+export async function postSnap(
+  me: Me,
+  backUri: string,
+  frontUri: string,
+  caption: string,
+  onTime: boolean,
+  style = 'tape',
+  viewOnce = false,
+  groupIds: string[] = [LAB_ID],
+): Promise<Snap> {
+  // Photos start private to you; the server shares them with the groups you picked.
+  const filePerms = [Permission.read(Role.user(me.id)), Permission.delete(Role.user(me.id))];
   const stamp = Date.now();
   const [backId, frontId] = await Promise.all([uploadImage(backUri, `back-${stamp}.jpg`, filePerms), uploadImage(frontUri, `front-${stamp}.jpg`, filePerms)]);
   const now = new Date();
-  const row = await tables.createRow({
-    databaseId: DB_ID,
-    tableId: SNAPS_TABLE,
-    rowId: ID.unique(),
-    data: {
-      authorId: me.id,
-      authorName: me.name,
-      backId,
-      frontId,
-      caption: caption.trim() || null,
-      hour: now.getHours(),
-      day: dayKey(now),
-      onTime,
-      keptBy: [],
-      reactions: [],
-      reportedBy: [],
-      style,
-      viewOnce,
-      viewedBy: [],
-    },
-    permissions: [Permission.read(everyone), Permission.update(everyone), Permission.delete(Role.user(me.id)), Permission.delete(admin)],
-  });
-  return row as unknown as Snap;
+  try {
+    const r = await call<{ snap: Snap }>('post', { backId, frontId, caption, onTime, style, viewOnce, groupIds, hour: now.getHours(), day: dayKey(now) });
+    return r.snap;
+  } catch (e) {
+    Promise.allSettled([storage.deleteFile({ bucketId: BUCKET_ID, fileId: backId }), storage.deleteFile({ bucketId: BUCKET_ID, fileId: frontId })]);
+    throw e;
+  }
 }
 
 async function patch(snap: Snap, data: Partial<Snap>) {
@@ -265,23 +324,8 @@ export async function deleteSnap(snap: Snap) {
   await Promise.allSettled([storage.deleteFile({ bucketId: BUCKET_ID, fileId: snap.backId }), storage.deleteFile({ bucketId: BUCKET_ID, fileId: snap.frontId })]);
 }
 
-/**
- * Deletes photos older than 24 hours that nobody kept. The tiny row stays (marked expired)
- * so streaks keep their history. Admin cleans up everyone's, others only their own.
- */
-export async function cleanupOld(me: Me) {
-  const before = new Date(Date.now() - keepMs).toISOString();
-  try {
-    const queries = [Query.lessThan('$createdAt', before), Query.notEqual('backId', EXPIRED), Query.limit(100)];
-    if (!me.admin) queries.unshift(Query.equal('authorId', me.id));
-    const r = await tables.listRows({ databaseId: DB_ID, tableId: SNAPS_TABLE, queries });
-    for (const s of r.rows as unknown as Snap[]) {
-      if (s.keptBy?.length) continue;
-      await Promise.allSettled([storage.deleteFile({ bucketId: BUCKET_ID, fileId: s.backId }), storage.deleteFile({ bucketId: BUCKET_ID, fileId: s.frontId })]);
-      await tables.updateRow({ databaseId: DB_ID, tableId: SNAPS_TABLE, rowId: s.$id, data: { backId: EXPIRED, frontId: EXPIRED, caption: null } });
-    }
-  } catch {}
-}
+/** Old photos are cleaned up by the server every hour now. */
+export async function cleanupOld(_me: Me) {}
 
 // ---------- photos (cached) ----------
 const cache = new Map<string, Promise<string>>();

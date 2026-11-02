@@ -29,7 +29,11 @@ export function MeScreen({
   onLogout,
   photoStyle,
   onPhotoStyle,
+  avatarId,
+  onPickAvatar,
 }: {
+  avatarId: string | null;
+  onPickAvatar: () => Promise<void>;
   me: Me;
   snaps: Snap[];
   kept: Snap[];
@@ -83,9 +87,14 @@ export function MeScreen({
       <TopBar title="Me" />
 
       <Card style={[s.profile, { backgroundColor: c.secondaryContainer }]}>
-        <Avatar id={me.id} name={me.name} size={72} />
+        <Pressable onPress={() => onPickAvatar().catch(() => {})} accessibilityLabel="Change profile photo">
+          <Avatar id={me.id} name={me.name} size={72} photo={avatarId} />
+          <View style={{ position: 'absolute', right: -2, bottom: -2, width: 28, height: 28, borderRadius: 14, backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: c.secondaryContainer }}>
+            <Icon name="camera" size={14} color={c.onPrimary} />
+          </View>
+        </Pressable>
         <View style={{ flex: 1 }}>
-          <Text style={[T.headlineSmall, { color: c.onSecondaryContainer }]}>{me.name}</Text>
+          <Text style={[T.headlineSmall, { color: c.onSecondaryContainer }]}>@{me.name}</Text>
           <Text style={[T.bodyMedium, { color: c.onSecondaryContainer, opacity: 0.8 }]}>{me.admin ? 'HourSnap admin' : `${members.filter((m) => !m.banned).length} people on HourSnap`}</Text>
         </View>
       </Card>
@@ -181,7 +190,7 @@ export function MeScreen({
                 <ListItem
                   key={m.id}
                   icon={m.banned ? 'account-cancel-outline' : 'account-outline'}
-                  title={m.name}
+                  title={`@${m.username}`}
                   supporting={m.banned ? 'Removed: their snaps are hidden' : 'Active'}
                   trailing={
                     <Button

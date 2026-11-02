@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, ButtonGroup, Icon, Switch, haptic } from '../components/ui';
+import { Avatar, Button, ButtonGroup, Icon, Switch, haptic } from '../components/ui';
 import { PHOTO_STYLES, Print, type PhotoStyle } from '../components/Print';
 import { ACCENTS, ACCENT_ORDER, FONTS, S, T, useTheme, type AccentKey, type Appearance } from '../theme';
 import { remindersSupported } from '../notify';
@@ -64,7 +64,17 @@ export function Onboarding({
   onAccent,
   onPhotoStyle,
   onDone,
+  meId,
+  avatarId,
+  onPickAvatar,
+  joinedLab,
+  onJoinLab,
 }: {
+  meId: string;
+  avatarId: string | null;
+  onPickAvatar: () => Promise<void>;
+  joinedLab: boolean;
+  onJoinLab: () => Promise<void>;
   name: string;
   appearance: Appearance;
   accentKey: AccentKey;
@@ -78,13 +88,27 @@ export function Onboarding({
 }) {
   const c = useTheme();
   const insets = useSafeAreaInsets();
-  const steps = remindersSupported ? 5 : 4;
+  const steps = remindersSupported ? 7 : 6;
   const [step, setStep] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const run = async (f: () => Promise<void>) => {
+    setBusy(true);
+    setErr('');
+    try {
+      await f();
+    } catch (e) {
+      setErr(String((e as Error)?.message ?? e));
+    } finally {
+      setBusy(false);
+    }
+  };
   const sample = (w: number) => (which: 'big' | 'small', size: { width: number; height: number; borderRadius?: number }) => (
     <Image source={which === 'big' ? SAMPLE_BACK : SAMPLE_FRONT} style={[size, { width: size.width, height: size.height }]} resizeMode="cover" />
   );
   const last = step === steps - 1;
   const next = () => (last ? onDone(false) : setStep(step + 1));
+  const blocked = step === 1 && !joinedLab;
 
   return (
     <View style={{ flex: 1, backgroundColor: c.surface, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 16 }}>
@@ -97,7 +121,7 @@ export function Onboarding({
       <ScrollView contentContainerStyle={st.body} showsVerticalScrollIndicator={false}>
         {step === 0 && (
           <>
-            <Text style={[T.displayMedium, { color: c.onSurface }]}>Hi {name}</Text>
+            <Text style={[T.displayMedium, { color: c.onSurface }]}>Hi @{name}</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 10 }]}>Here's how HourSnap works.</Text>
             {(
               [
@@ -121,6 +145,44 @@ export function Onboarding({
         )}
 
         {step === 1 && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Join your school</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>
+              Everybody on HourSnap is in LAB. Later you can also make private rooms with up to 5 friends.
+            </Text>
+            <View style={[st.lab, { backgroundColor: joinedLab ? c.secondaryContainer : c.surfaceContainerLow, borderColor: joinedLab ? c.primary : c.outlineVariant }]}>
+              <View style={[st.labIcon, { backgroundColor: c.primary }]}>
+                <Icon name="school" size={34} color={c.onPrimary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[T.headlineSmall, { color: c.onSurface }]}>LAB</Text>
+                <Text style={[T.bodyMedium, { color: c.onSurfaceVariant }]}>The school group. Everyone can join.</Text>
+              </View>
+              {joinedLab && <Icon name="check-circle" size={30} color={c.primary} />}
+            </View>
+            {!joinedLab && <Button title="Join LAB" icon="account-plus" big busy={busy} onPress={() => run(onJoinLab)} style={{ marginTop: 16 }} />}
+            {joinedLab && <Text style={[T.titleMedium, { color: c.primary, marginTop: 14, textAlign: 'center' }]}>You're in LAB 🎉</Text>}
+            {!!err && <Text style={[T.bodyMedium, { color: c.error, marginTop: 12 }]}>{err}</Text>}
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface }]}>Profile photo</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 28 }]}>So friends know it's you. You can skip this and add one later under Me.</Text>
+            <Pressable onPress={() => run(onPickAvatar)} accessibilityLabel="Pick a profile photo" style={{ alignSelf: 'center' }}>
+              <Avatar id={meId} name={name} size={148} photo={avatarId} />
+              <View style={[st.camBadge, { backgroundColor: c.primary, borderColor: c.surface }]}>
+                <Icon name={avatarId ? 'pencil' : 'camera-plus'} size={22} color={c.onPrimary} />
+              </View>
+            </Pressable>
+            <Text style={[T.titleLarge, { color: c.onSurface, textAlign: 'center', marginTop: 16 }]}>@{name}</Text>
+            <Button title={avatarId ? 'Pick another photo' : 'Pick a photo'} icon="image-outline" variant="tonal" busy={busy} onPress={() => run(onPickAvatar)} style={{ marginTop: 20, alignSelf: 'center' }} />
+            {!!err && <Text style={[T.bodyMedium, { color: c.error, marginTop: 12, textAlign: 'center' }]}>{err}</Text>}
+          </>
+        )}
+
+        {step === 3 && (
           <>
             <Text style={[T.headlineLarge, { color: c.onSurface }]}>Make it yours</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>Light or dark, and your colour. You can change this later under Me.</Text>
@@ -165,7 +227,7 @@ export function Onboarding({
           </>
         )}
 
-        {step === 2 && (
+        {step === 4 && (
           <>
             <Text style={[T.headlineLarge, { color: c.onSurface }]}>Your photo style</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>This is how your snaps look for everyone.</Text>
@@ -200,7 +262,7 @@ export function Onboarding({
           </>
         )}
 
-        {step === 3 && (
+        {step === 5 && (
           <>
             <Text style={[T.headlineLarge, { color: c.onSurface }]}>When can you snap?</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 20 }]}>
@@ -212,7 +274,7 @@ export function Onboarding({
           </>
         )}
 
-        {step === 4 && remindersSupported && (
+        {step === 6 && remindersSupported && (
           <>
             <Text style={[T.headlineLarge, { color: c.onSurface }]}>A nudge every hour?</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, marginTop: 8, marginBottom: 24 }]}>
@@ -240,7 +302,7 @@ export function Onboarding({
             <Button title="Turn on" icon="bell-ring-outline" big onPress={() => onDone(true)} />
           </View>
         ) : (
-          <Button title={last ? 'Start snapping' : 'Next'} icon={last ? 'camera-iris' : 'arrow-right'} big onPress={next} />
+          <Button title={last ? 'Start snapping' : step === 2 && !avatarId ? 'Skip' : 'Next'} icon={last ? 'camera-iris' : 'arrow-right'} big onPress={blocked ? undefined : next} style={blocked ? { opacity: 0.35 } : undefined} />
         )}
       </View>
     </View>
@@ -248,6 +310,9 @@ export function Onboarding({
 }
 
 const st = StyleSheet.create({
+  lab: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 18, borderRadius: S.xl, borderWidth: 2 },
+  labIcon: { width: 64, height: 64, borderRadius: S.lg, alignItems: 'center', justifyContent: 'center' },
+  camBadge: { position: 'absolute', right: 2, bottom: 2, width: 46, height: 46, borderRadius: 23, borderWidth: 4, alignItems: 'center', justifyContent: 'center' },
   dots: { flexDirection: 'row', gap: 6, justifyContent: 'center', paddingVertical: 8 },
   dot: { height: 8, borderRadius: 4 },
   body: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 24, maxWidth: 560, width: '100%', alignSelf: 'center' },

@@ -19,7 +19,10 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": ["CAMERA", "POST_NOTIFICATIONS"],
+      "permissions": [
+        "CAMERA",
+        "POST_NOTIFICATIONS"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -43,6 +46,14 @@
         "expo-notifications",
         {
           "color": "#E2668F"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "HourSnap lets you pick a profile photo.",
+          "cameraPermission": "HourSnap uses your camera to take your hourly snap.",
+          "microphonePermission": false
         }
       ]
     ]

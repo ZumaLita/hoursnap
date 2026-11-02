@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon } from '../components/ui';
 import { FONTS, S, T, useStyles, useTheme, type Theme } from '../theme';
 import { PIN_LENGTH, validPhone } from '../config';
-import { NumberTaken, currentUser, login, niceError, setName as saveMyName, signup, type Me } from '../api';
+import { NumberTaken, currentUser, login, niceError, setUsername, cleanUsername, signup, type Me } from '../api';
 
 type Step = 'phone' | 'pin' | 'confirm' | 'name';
 
@@ -118,12 +118,12 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
   };
 
   const saveName = async () => {
-    if (name.trim().length < 2) return setError('Type your name (at least 2 letters).');
+    if (name.length < 3) return setError('At least 3 letters or numbers.');
     if (!newMe) return;
     setBusy(true);
     setError('');
     try {
-      onDone(await saveMyName(newMe, name));
+      onDone(await setUsername(newMe, name));
     } catch (e) {
       setError(niceError(e));
     } finally {
@@ -216,21 +216,25 @@ export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?:
           <>
             <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>You're in!</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 28 }]}>
-              What should people see as your name?
+              Pick a username. Friends find you with it to add you to their rooms.
             </Text>
+            <View style={[s.input, { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 0 }]}>
+              <Text style={[T.titleLarge, { color: c.onSurfaceVariant, paddingLeft: 18 }]}>@</Text>
             <TextInput
               value={name}
-              onChangeText={setName}
-              placeholder="First name"
+              onChangeText={(t) => setName(cleanUsername(t))}
+              placeholder="username"
               placeholderTextColor={c.outline}
-              autoCapitalize="words"
+              autoCapitalize="none"
               autoCorrect={false}
               autoFocus
               returnKeyType="done"
               onSubmitEditing={saveName}
-              maxLength={24}
-              style={s.input}
+              maxLength={20}
+              style={[T.titleLarge, { flex: 1, height: '100%', color: c.onSurface, paddingLeft: 2, paddingRight: 18, outlineStyle: 'none' } as never]}
             />
+            </View>
+            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Letters, numbers, dots and _. Like @lena.v</Text>
             {!!error && <Text style={[T.bodyMedium, s.error]}>{error}</Text>}
             <Button title="Let's go" icon="arrow-right" big busy={busy} onPress={saveName} style={{ marginTop: 24 }} />
           </>

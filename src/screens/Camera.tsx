@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Button, Icon, Press } from '../components/ui';
 import { T, useTheme } from '../theme';
-import { niceError, postSnap, type Me } from '../api';
+import { niceError, postSnap, type Group, type Me } from '../api';
 import { OnceMark } from '../components/ViewOnce';
 
 type Step = 'back' | 'front' | 'review' | 'posting';
@@ -28,12 +28,16 @@ export function Camera({
   photoStyle,
   onClose,
   onPosted,
+  groups,
+  defaultGroup,
 }: {
   me: Me;
   onTime: boolean;
   photoStyle: string;
   onClose: () => void;
   onPosted: () => void;
+  groups: Group[];
+  defaultGroup: string;
 }) {
   const c = useTheme();
   const styles = React.useMemo(() => mk(c), [c]);
@@ -48,6 +52,7 @@ export function Camera({
   const [swapped, setSwapped] = useState(false);
   const [caption, setCaption] = useState('');
   const [once, setOnce] = useState(false);
+  const [to, setTo] = useState<string[]>([defaultGroup]);
   const [error, setError] = useState('');
   const [kb, setKb] = useState(0);
 
@@ -101,10 +106,11 @@ export function Camera({
 
   const post = async () => {
     if (!back || !front) return;
+    if (!to.length) return setError('Pick where to send it.');
     setStep('posting');
     setError('');
     try {
-      await postSnap(me, back, front, caption, onTime, photoStyle, once);
+      await postSnap(me, back, front, caption, onTime, photoStyle, once, to);
       onPosted();
     } catch (e) {
       setError(niceError(e));
@@ -188,6 +194,30 @@ export function Camera({
             </Press>
           ) : (
             <>
+              {!kb && (
+                <View style={{ width: '100%' }}>
+                  <Text style={[T.labelMedium, { color: 'rgba(235,235,245,0.6)', marginBottom: 6 }]}>SEND TO</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                    {groups.map((g) => {
+                      const on = to.includes(g.$id);
+                      return (
+                        <Press
+                          key={g.$id}
+                          onPress={() => setTo((t) => (on ? t.filter((x) => x !== g.$id) : [...t, g.$id]))}
+                          radius={18}
+                          squish={0.92}
+                          accessibilityState={{ selected: on }}
+                          accessibilityLabel={`Send to ${g.name}`}
+                          style={[styles.to, on ? { backgroundColor: '#FFFFFF' } : null]}
+                        >
+                          <Icon name={on ? 'check' : g.kind === 'lab' ? 'school' : 'lock'} size={16} color={on ? '#000000' : '#FFFFFF'} />
+                          <Text style={[T.labelLarge, { color: on ? '#000000' : '#FFFFFF' }]}>{g.name}</Text>
+                        </Press>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
               <View style={styles.sendRow}>
                 <Press
                   onPress={() => {
@@ -248,6 +278,7 @@ const mk = (c: ReturnType<typeof useTheme>) =>
   shutterInner: { width: 62, height: 62, borderRadius: 31, backgroundColor: c.primaryContainer },
   sendRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
   caption: { flex: 1, height: 56, borderRadius: 28, paddingHorizontal: 20, backgroundColor: 'rgba(118,118,128,0.28)', color: '#FFFFFF' },
+  to: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 14, borderRadius: 18, backgroundColor: 'rgba(118,118,128,0.32)' },
   once: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(118,118,128,0.28)' },
   send: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
 });

@@ -1,5 +1,5 @@
 // Native (Android) Appwrite client.
-import { Account, Client, ID, Permission, Query, Role, Storage, TablesDB, Teams } from 'react-native-appwrite';
+import { Account, Client, Functions, ID, Permission, Query, Role, Storage, TablesDB, Teams } from 'react-native-appwrite';
 import { File } from 'expo-file-system';
 import { Buffer } from 'buffer';
 import { BUCKET_ID, ENDPOINT, PLATFORM_ID, PROJECT_ID } from './config';
@@ -9,6 +9,7 @@ export const account = new Account(client);
 export const tables = new TablesDB(client);
 export const storage = new Storage(client);
 export const teams = new Teams(client);
+export const functions = new Functions(client);
 export { ID, Permission, Query, Role };
 
 export async function uploadImage(uri: string, name: string, permissions: string[]) {

@@ -124,9 +124,20 @@ export function Shape({
   );
 }
 
-/** Round avatar with a thin print-white ring. */
-export function Avatar({ id, name, size = 40 }: { id: string; name: string; size?: number }) {
+/** userId -> profile photo file id, filled in by App from the profiles table. */
+export const AvatarContext = React.createContext<Map<string, string>>(new Map());
+
+/** Round avatar with a thin print-white ring: the profile photo, or the first letter. */
+export function Avatar({ id, name, size = 40, photo }: { id: string; name: string; size?: number; photo?: string | null }) {
   const c = useTheme();
+  const map = React.useContext(AvatarContext);
+  const fileId = photo !== undefined ? photo : map.get(id);
+  if (fileId)
+    return (
+      <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: Math.max(2, size / 18), borderColor: c.print, overflow: 'hidden', backgroundColor: colorFor(id) }}>
+        <SnapImage fileId={fileId} style={{ width: '100%', height: '100%' } as never} />
+      </View>
+    );
   return (
     <View
       style={{

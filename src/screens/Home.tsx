@@ -5,7 +5,8 @@ import { Avatar, Icon, Press } from '../components/ui';
 import { SnapCard } from '../components/SnapCard';
 import { TAB_BAR_HEIGHT } from '../components/TabBar';
 import { FONTS, S, T, useStyles, useTheme, type Theme } from '../theme';
-import { dayKey, type Me, type Member, type Snap } from '../api';
+import { dayKey, type Group, type Me, type Member, type Snap } from '../api';
+import { GroupBar } from '../components/Rooms';
 
 function dayLabel(day: string) {
   if (day === dayKey()) return 'Today';
@@ -65,6 +66,11 @@ export function Home({
   onReport,
   onClearReports,
   onOpenOnce,
+  groups,
+  group,
+  onGroup,
+  onNewRoom,
+  onEditRoom,
 }: {
   me: Me;
   members: Member[];
@@ -80,6 +86,11 @@ export function Home({
   onReport: (s: Snap) => void;
   onClearReports: (s: Snap) => void;
   onOpenOnce: (s: Snap) => void;
+  groups: Group[];
+  group: string;
+  onGroup: (id: string) => void;
+  onNewRoom: () => void;
+  onEditRoom: (g: Group) => void;
 }) {
   const c = useTheme();
   const s = useStyles(makeStyles);
@@ -118,6 +129,8 @@ export function Home({
           <Text style={[T.titleMedium, T.num, { color: streak > 0 ? c.onFireContainer : c.onSurfaceVariant }]}>{streak}</Text>
         </Press>
       </View>
+
+      <GroupBar groups={groups} value={group} onChange={(id) => { setFilter(null); onGroup(id); }} onNew={onNewRoom} onEdit={onEditRoom} />
 
       <HourRibbon snaps={snaps} meId={me.id} />
 
@@ -163,7 +176,7 @@ export function Home({
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[c.primary]} tintColor={c.primary} />}
       ListEmptyComponent={
         <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 40 }]}>
-          {filter ? 'No snaps from them in the last 24 hours.' : 'No snaps in the last 24 hours. Be the first!'}
+          {filter ? 'No snaps from them in the last 24 hours.' : `No snaps in ${groups.find((g) => g.$id === group)?.name ?? 'here'} in the last 24 hours. Be the first!`}
         </Text>
       }
       renderItem={({ item }) =>

@@ -1,5 +1,5 @@
 // Web Appwrite client.
-import { Account, Client, ID, Permission, Query, Role, Storage, TablesDB, Teams } from 'appwrite';
+import { Account, Client, Functions, ID, Permission, Query, Role, Storage, TablesDB, Teams } from 'appwrite';
 import { BUCKET_ID, ENDPOINT, PROJECT_ID } from './config';
 
 export const client = new Client().setEndpoint(ENDPOINT).setProject(PROJECT_ID);
@@ -7,6 +7,7 @@ export const account = new Account(client);
 export const tables = new TablesDB(client);
 export const storage = new Storage(client);
 export const teams = new Teams(client);
+export const functions = new Functions(client);
 export { ID, Permission, Query, Role };
 
 export async function uploadImage(uri: string, name: string, permissions: string[]) {

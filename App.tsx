@@ -16,6 +16,9 @@ import { TabBar, type Tab } from './src/components/TabBar';
 import { Viewer } from './src/components/Viewer';
 import { ViewOnceViewer } from './src/components/ViewOnce';
 import { InstallPrompt } from './src/components/InstallPrompt';
+import { RoomSheet } from './src/components/Rooms';
+import { AvatarContext } from './src/components/ui';
+import { pickProfilePhoto } from './src/pickPhoto';
 import { Login } from './src/screens/Login';
 import { Home } from './src/screens/Home';
 import { Streaks } from './src/screens/Streaks';
@@ -42,6 +45,11 @@ import {
   setBanned,
   toggleKeep,
   markViewed,
+  listGroups,
+  joinLab,
+  setAvatar,
+  LAB_ID,
+  type Group,
   type Me,
   type Member,
   type Snap,
@@ -82,6 +90,9 @@ export default function App() {
   const [photoStyle, setPhotoStyle] = useState<PhotoStyle>('tape');
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [once, setOnce] = useState<Snap | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [group, setGroup] = useState<string>(LAB_ID);
+  const [roomSheet, setRoomSheet] = useState<{ room: Group | null } | null>(null);
 
   // Restore session and settings.
   useEffect(() => {
@@ -99,12 +110,17 @@ export default function App() {
     if (!me) return;
     setRefreshing(true);
     try {
-      const [m, s, k, sr] = await Promise.all([
+      const [m, s, k, sr, g] = await Promise.all([
         listMembers(),
         listRecentSnaps(),
         listKeptSnaps(me.id),
         listStreakRows().catch(() => null),
+        listGroups().catch(() => null),
       ]);
+      if (g) {
+        setGroups(g);
+        setGroup((cur) => (g.some((x) => x.$id === cur) ? cur : LAB_ID));
+      }
       setMembers(m);
       const mine = m.find((x) => x.id === me.id);
       if (mine) setSchedule(mine.schedule);
@@ -152,6 +168,17 @@ export default function App() {
     if (me) saveProfile(me, s).catch(() => {});
   };
 
+  const myProfile = members.find((m) => m.id === me?.id);
+  const avatars = useMemo(() => new Map(members.filter((m) => m.avatarId).map((m) => [m.id, m.avatarId as string])), [members]);
+  const pickAvatar = async () => {
+    if (!me) return;
+    const uri = await pickProfilePhoto();
+    if (!uri) return;
+    const id = await setAvatar(me, uri, myProfile?.avatarId ?? null);
+    setMembers((all) => all.map((m) => (m.id === me.id ? { ...m, avatarId: id } : m)));
+  };
+  const feed = useMemo(() => snaps.filter((x) => (x.groups?.length ? x.groups : [LAB_ID]).includes(group)), [snaps, group]);
+
   const myStreak = useMemo(() => (me ? computeStreak(streakRows.filter((r) => r.authorId === me.id), (d) => windowFor(schedule, d)).current : 0), [streakRows, me, schedule]);
 
   // Everything the viewer can show, kept fresh after reactions.
@@ -172,10 +199,12 @@ export default function App() {
 
   const wrap = (node: React.ReactNode, lightContent = theme.dark) => (
     <ThemeContext.Provider value={theme}>
+      <AvatarContext.Provider value={avatars}>
       <SafeAreaProvider>
         <StatusBar style={lightContent ? 'light' : 'dark'} />
         {node}
       </SafeAreaProvider>
+      </AvatarContext.Provider>
     </ThemeContext.Provider>
   );
 
@@ -201,6 +230,15 @@ export default function App() {
   if (!onboarded)
     return wrap(
       <Onboarding
+        meId={me.id}
+        avatarId={myProfile?.avatarId ?? null}
+        onPickAvatar={pickAvatar}
+        joinedLab={!!myProfile?.lab}
+        onJoinLab={async () => {
+          await joinLab(me);
+          setMembers((all) => (all.some((m) => m.id === me.id) ? all.map((m) => (m.id === me.id ? { ...m, lab: true } : m)) : all));
+          load();
+        }}
         name={me.name}
         appearance={appearance}
         accentKey={accentKey}
@@ -236,6 +274,8 @@ export default function App() {
         me={me}
         onTime={onTime}
         photoStyle={photoStyle}
+        groups={groups.length ? groups : [{ $id: LAB_ID, name: 'LAB', kind: 'lab', members: [] }]}
+        defaultGroup={group}
         onClose={() => setCamera(false)}
         onPosted={() => {
           setCamera(false);
@@ -254,7 +294,12 @@ export default function App() {
         <Home
           me={me}
           members={members}
-          snaps={snaps}
+          snaps={feed}
+          groups={groups.length ? groups : [{ $id: LAB_ID, name: 'LAB', kind: 'lab', members: [] }]}
+          group={group}
+          onGroup={setGroup}
+          onNewRoom={() => setRoomSheet({ room: null })}
+          onEditRoom={(g) => setRoomSheet({ room: g })}
           streak={myStreak}
           refreshing={refreshing}
           onRefresh={load}
@@ -303,6 +348,8 @@ export default function App() {
             setItem('appearance', a);
             savePrefs({ appearance: a });
           }}
+          avatarId={myProfile?.avatarId ?? null}
+          onPickAvatar={pickAvatar}
           photoStyle={photoStyle}
           onPhotoStyle={(p) => {
             setPhotoStyle(p);
@@ -330,6 +377,27 @@ export default function App() {
         />
       )}
       <TabBar tab={tab} onTab={setTab} onSnap={() => setCamera(true)} />
+      {roomSheet && (
+        <RoomSheet
+          key={roomSheet.room?.$id ?? 'new'}
+          me={me}
+          room={roomSheet.room}
+          members={members}
+          open
+          onClose={() => setRoomSheet(null)}
+          onSaved={(g) => {
+            setRoomSheet(null);
+            if (g) {
+              setGroups((all) => [...all.filter((x) => x.$id !== g.$id), g]);
+              setGroup(g.$id);
+            } else {
+              setGroups((all) => all.filter((x) => x.$id !== roomSheet.room?.$id));
+              setGroup(LAB_ID);
+            }
+            load();
+          }}
+        />
+      )}
       <ViewOnceViewer key={once?.$id ?? 'none'} snap={once} onClose={() => setOnce(null)} />
       <InstallPrompt />
       <Viewer
