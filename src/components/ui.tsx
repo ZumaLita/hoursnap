@@ -207,6 +207,7 @@ export function Button({
   return (
     <Press
       onPress={busy ? undefined : onPress}
+      radius={h / 2}
       morph={S.md}
       style={[
         {
