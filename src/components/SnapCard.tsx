@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Avatar, Icon, IconButton, Press, SnapImage } from './ui';
 import { Print, isPhotoStyle } from './Print';
+import { ViewOnceTile } from './ViewOnce';
 import { FONTS, S, T, useTheme } from '../theme';
 import { REACTIONS } from '../config';
 import type { Snap } from '../api';
@@ -22,6 +23,7 @@ export function SnapCard({
   admin,
   onReport,
   onClearReports,
+  onOpenOnce,
 }: {
   snap: Snap;
   meId: string;
@@ -31,6 +33,7 @@ export function SnapCard({
   admin?: boolean;
   onReport?: () => void;
   onClearReports?: () => void;
+  onOpenOnce?: () => void;
 }) {
   const c = useTheme();
   const { width } = useWindowDimensions();
@@ -90,6 +93,9 @@ export function SnapCard({
         {(snap.authorId === meId || admin) && <IconButton icon="trash-can-outline" label="Delete snap" onPress={confirmDelete} size={40} />}
       </View>
 
+      {snap.viewOnce ? (
+        <ViewOnceTile snap={snap} meId={meId} width={printW + 8} onOpen={() => onOpenOnce?.()} />
+      ) : (
       <Print
         style={isPhotoStyle(snap.style) ? snap.style : 'tape'}
         width={printW}
@@ -101,6 +107,7 @@ export function SnapCard({
         onPress={() => setSwapped((x) => !x)}
         image={(which, size) => <SnapImage fileId={(which === 'big') !== swapped ? snap.backId : snap.frontId} style={size} />}
       />
+      )}
 
       <View style={styles.actions}>
         <Press
@@ -124,6 +131,7 @@ export function SnapCard({
           <Text style={[T.labelLarge, T.num, { color: c.onSurface }]}>{others}</Text>
         </Press>
         <View style={{ flex: 1 }} />
+        {!snap.viewOnce && (
         <Press
           onPress={onKeep}
           radius={S.full}
@@ -134,6 +142,7 @@ export function SnapCard({
           <Icon name={kept ? 'bookmark' : 'bookmark-outline'} size={21} color={kept ? c.fire : c.onSurface} />
           <Text style={[T.labelLarge, T.num, { color: c.onSurface }]}>{snap.keptBy.length}</Text>
         </Press>
+        )}
       </View>
 
       {picker && (

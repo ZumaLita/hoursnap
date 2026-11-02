@@ -1,7 +1,7 @@
 {
   "name": "HourSnap",
   "short_name": "HourSnap",
-  "description": "Hourly family snaps",
+  "description": "Show your day, one hour at a time",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#4A3AFF",

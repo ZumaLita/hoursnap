@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Join HourSnap</title>
+<meta name="description" content="Show your day, one hour at a time. Back camera and selfie, together." />
+<meta property="og:title" content="Join HourSnap 📸" />
+<meta property="og:description" content="Show your day, one hour at a time. Back camera and selfie, together." />
+<meta property="og:image" content="https://hoursnap-coral.vercel.app/icon-512.png" />
+<meta name="theme-color" content="#4A3AFF" />
+<link rel="icon" href="/join/logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Caveat:wght@600&family=VT323&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --violet: #4A3AFF;
+    --violet-deep: #2E22C9;
+    --ink: #14112B;
+    --paper: #FFFDF7;
+    --sun: #FFD60A;
+    --orange: #FF7A1A;
+    --muted: rgba(255,255,255,0.78);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    color: #fff;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #6A5CFF 0%, transparent 60%),
+      radial-gradient(800px 500px at -10% 110%, #FF7A1A55 0%, transparent 60%),
+      var(--violet);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; align-items: center; gap: 10px; }
+  header img { width: 40px; height: 40px; transform: rotate(-4deg); }
+  header b { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+
+  .hero { display: grid; grid-template-columns: 1fr; gap: 28px; align-items: center; margin-top: 28px; }
+  .hero > div { min-width: 0; }
+  @media (min-width: 860px) { .hero { grid-template-columns: 1.05fr 0.95fr; gap: 48px; margin-top: 56px; } }
+
+  h1 { font-size: clamp(44px, 11vw, 84px); line-height: 0.95; letter-spacing: -0.04em; margin: 0; font-weight: 800; }
+  h1 .hand { font-family: 'Caveat', cursive; font-weight: 600; color: var(--sun); letter-spacing: 0; display: inline-block; transform: rotate(-3deg); }
+  .lead { font-size: 19px; line-height: 1.45; color: var(--muted); margin: 18px 0 26px; max-width: 30em; }
+
+  .cta { display: none; }
+  .cta.on { display: block; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    height: 64px; padding: 0 28px; border-radius: 32px; border: 0;
+    background: #fff; color: var(--ink); font: 800 19px 'Bricolage Grotesque', sans-serif;
+    text-decoration: none; box-shadow: 0 10px 0 var(--violet-deep), 0 18px 40px rgba(0,0,0,0.25);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:active { transform: translateY(6px); box-shadow: 0 4px 0 var(--violet-deep), 0 8px 20px rgba(0,0,0,0.25); }
+  .btn svg { width: 26px; height: 26px; }
+  .btn.ghost { background: transparent; color: #fff; box-shadow: none; border: 2px solid rgba(255,255,255,0.4); height: 52px; font-size: 16px; margin-top: 12px; }
+  .small { font-size: 14px; color: var(--muted); margin-top: 12px; text-align: center; }
+  .small a { color: #fff; }
+
+  .steps { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; counter-reset: s; }
+  .steps li {
+    counter-increment: s; display: flex; gap: 12px; align-items: center;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16);
+    padding: 12px 14px; border-radius: 18px; font-size: 16px; line-height: 1.35;
+  }
+  .steps li > span { flex: 1; min-width: 0; line-height: 1.9; }
+  .steps li::before {
+    content: counter(s); flex: none; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--sun); color: var(--ink); font-weight: 800; display: grid; place-items: center;
+  }
+  .key { display: inline-flex; align-items: center; gap: 5px; background: #fff; color: var(--ink); padding: 2px 9px; border-radius: 9px; font-weight: 600; white-space: nowrap; line-height: 1.5; }
+  .key svg { width: 15px; height: 15px; }
+
+  .desk { display: none; gap: 20px; align-items: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); padding: 18px; border-radius: 26px; }
+  .desk.on { display: flex; }
+  .qr { flex: none; width: 132px; height: 132px; background: #fff; border-radius: 18px; padding: 12px; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .desk p { margin: 0 0 8px; font-size: 17px; line-height: 1.4; }
+  .desk a { color: #fff; font-weight: 600; }
+
+  .switch { margin-top: 18px; font-size: 14px; color: var(--muted); }
+  .switch button { background: none; border: 0; color: #fff; font: 600 14px 'Bricolage Grotesque', sans-serif; text-decoration: underline; cursor: pointer; padding: 0 4px; }
+
+  /* the print */
+  .stage { position: relative; display: grid; place-items: center; padding: 30px 0 10px; }
+  .print {
+    position: relative; width: min(78vw, 340px); background: var(--paper); padding: 14px 14px 0; border-radius: 4px;
+    transform: rotate(3deg); box-shadow: 0 30px 60px rgba(20,17,43,0.45);
+    animation: drop .9s cubic-bezier(.2,.9,.3,1.3) both;
+  }
+  @keyframes drop { from { transform: translateY(-30px) rotate(-8deg); opacity: 0; } to { transform: rotate(3deg); opacity: 1; } }
+  .print .photo { position: relative; aspect-ratio: 3/4; overflow: hidden; background: #ddd; }
+  .print .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .stamp { position: absolute; right: 10px; bottom: 6px; font-family: 'VT323', monospace; font-size: 26px; color: #FF8A1F; text-shadow: 0 0 6px rgba(255,138,31,0.7); }
+  .print figcaption { font-family: 'Caveat', cursive; font-size: 28px; color: #2A2440; padding: 10px 6px 14px; }
+  .tape { position: absolute; top: -12px; left: 50%; width: 90px; height: 26px; margin-left: -45px; background: rgba(255,214,10,0.75); transform: rotate(-4deg); z-index: 2; }
+  .selfie {
+    position: absolute; top: -18px; left: -26px; width: 36%; background: #fff; padding: 6px 6px 20px; border-radius: 3px;
+    transform: rotate(-7deg); box-shadow: 0 12px 26px rgba(20,17,43,0.35); z-index: 3;
+  }
+  .selfie img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+  .once {
+    position: absolute; right: -18px; top: 38%; z-index: 3; display: flex; align-items: center; gap: 8px;
+    background: var(--ink); color: #fff; padding: 9px 14px 9px 9px; border-radius: 999px; font-weight: 600; font-size: 15px;
+    transform: rotate(-3deg); box-shadow: 0 12px 26px rgba(0,0,0,0.3);
+  }
+  .once i { width: 26px; height: 26px; border-radius: 50%; background: var(--sun); color: var(--ink); font-style: normal; font-weight: 800; display: grid; place-items: center; font-size: 15px; }
+
+  .features { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 46px; }
+  @media (min-width: 700px) { .features { grid-template-columns: repeat(4, 1fr); } }
+  .feat { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16); border-radius: 22px; padding: 18px; }
+  .feat .ico { font-size: 28px; }
+  .feat h3 { margin: 8px 0 4px; font-size: 18px; }
+  .feat p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.4; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 36px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><img src="/join/logo.png" alt="" /><b>HourSnap</b></header>
+
+  <section class="hero">
+    <div>
+      <h1>Your day,<br /><span class="hand">one hour</span> at a time.</h1>
+      <p class="lead">Every hour you snap what you see and your face at the same time. Pick your own hours for school days, weekends and holidays. Snaps vanish after 24 hours.</p>
+
+      <!-- Android -->
+      <div class="cta" id="android">
+        <a class="btn" href="https://github.com/ZumaLita/hoursnap/releases/latest/download/HourSnap.apk">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 5.92a.38.38 0 1 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+          Download for Android
+        </a>
+        <ol class="steps">
+          <li><span>Open the downloaded <b>HourSnap.apk</b></span></li>
+          <li><span>If your phone asks, tap <span class="key">Settings</span> and turn on <span class="key">Allow from this source</span></span></li>
+          <li><span>Tap <span class="key">Install</span>, open HourSnap, type your name and pick a PIN</span></li>
+        </ol>
+        <a class="btn ghost" href="/">Or use the web app</a>
+      </div>
+
+      <!-- iPhone -->
+      <div class="cta" id="ios">
+        <a class="btn" href="/">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.7-3.19-1.72-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.88-.76a4.26 4.26 0 0 0-3.6 2.19c-1.54 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.24 2.74 2.2 1.1-.05 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.47-.03-.01-2.3-.88-2.26-3.54zM14.2 6.13c.6-.74 1.01-1.76.9-2.78-.87.04-1.93.58-2.55 1.31-.56.65-1.05 1.69-.92 2.69.97.07 1.97-.5 2.57-1.22z"/></svg>
+          Open HourSnap
+        </a>
+        <ol class="steps">
+          <li><span>Open this page in <span class="key">Safari</span></span></li>
+          <li><span>Tap <span class="key"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Share</span> then <span class="key">Add to Home Screen</span></span></li>
+          <li><span>Open HourSnap from your home screen, type your name and pick a PIN</span></li>
+        </ol>
+        <p class="small">No App Store needed. It works like a real app.</p>
+      </div>
+
+      <!-- Computer -->
+      <div class="desk" id="desk">
+        <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" shape-rendering="crispEdges"><path stroke="#14112B" d="M0 0.5h7m1 0h1m4 0h1m2 0h4m2 0h7M0 1.5h1m5 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m4 0h5m3 0h2m1 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h3m1 0h3m2 0h1m1 0h1m2 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m2 0h1m1 0h9m2 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m4 0h1m2 0h1m1 0h5m1 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h2m2 0h1m1 0h2m1 0h1m2 0h1M0 8.5h1m1 0h2m1 0h3m5 0h1m1 0h5m2 0h1m2 0h1m1 0h2M1 9.5h5m1 0h1m1 0h1m2 0h2m2 0h1m1 0h3m1 0h3m3 0h1M0 10.5h3m1 0h1m1 0h1m1 0h2m1 0h3m2 0h3m1 0h1m2 0h2m1 0h2M0 11.5h1m1 0h2m5 0h1m1 0h2m2 0h1m2 0h1m2 0h1m6 0h1M1 12.5h4m1 0h2m2 0h3m1 0h1m2 0h1m2 0h1m2 0h1m1 0h2M2 13.5h4m1 0h2m2 0h1m2 0h2m1 0h3m2 0h1m3 0h3M0 14.5h1m5 0h3m2 0h1m1 0h1m2 0h2m1 0h3m1 0h1m2 0h3M1 15.5h2m1 0h2m1 0h1m4 0h1m1 0h2m2 0h7m2 0h1M4 16.5h3m2 0h1m2 0h1m1 0h1m1 0h1m1 0h4m2 0h2m1 0h1M3 17.5h1m1 0h1m2 0h1m2 0h1m2 0h2m4 0h1m2 0h1m1 0h3M0 18.5h1m1 0h1m1 0h1m1 0h1m1 0h4m1 0h3m1 0h2m1 0h2m1 0h1m2 0h1M3 19.5h1m1 0h1m4 0h1m1 0h3m2 0h5m2 0h1m1 0h1M1 20.5h3m1 0h2m2 0h1m1 0h1m1 0h2m2 0h10M8 21.5h1m1 0h2m4 0h1m1 0h1m1 0h1m3 0h5M0 22.5h7m1 0h1m1 0h2m2 0h1m1 0h5m1 0h1m1 0h2m1 0h1M0 23.5h1m5 0h1m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m3 0h2M0 24.5h1m1 0h3m1 0h1m2 0h2m4 0h1m1 0h1m2 0h5m1 0h1M0 25.5h1m1 0h3m1 0h1m1 0h3m4 0h2m2 0h3m1 0h3m2 0h1M0 26.5h1m1 0h3m1 0h1m1 0h2m1 0h2m3 0h1m1 0h1m1 0h2m1 0h1m2 0h1m1 0h1M0 27.5h1m5 0h1m6 0h2m1 0h1m1 0h1m1 0h2m2 0h2m1 0h1M0 28.5h7m1 0h2m1 0h2m1 0h2m4 0h1m2 0h2m2 0h1"/></svg></div>
+        <div>
+          <p><b>HourSnap is made for your phone.</b> Scan this with your camera, or send yourself this link.</p>
+          <a href="/">Open the web app here anyway →</a>
+        </div>
+      </div>
+
+      <p class="switch" id="switch">Wrong phone? <button data-go="android">Android</button>·<button data-go="ios">iPhone</button></p>
+    </div>
+
+    <div class="stage" aria-hidden="true">
+      <figure class="print">
+        <div class="tape"></div>
+        <div class="selfie"><img src="/join/front.jpg" alt="" /></div>
+        <div class="photo"><img src="/join/back.jpg" alt="" /><span class="stamp" id="stamp">'26 11 02 14u</span></div>
+        <figcaption>duck spotted on the way home 🦆</figcaption>
+        <div class="once"><i>1</i>View once</div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feat"><div class="ico">📸</div><h3>Two cameras</h3><p>One tap snaps the back camera and a selfie together.</p></div>
+    <div class="feat"><div class="ico">🕓</div><h3>Your own hours</h3><p>Pick when you can snap on school days, weekends and holidays.</p></div>
+    <div class="feat"><div class="ico">🔥</div><h3>Streaks</h3><p>Keep your streak going. Extra snaps earn shields that save you.</p></div>
+    <div class="feat"><div class="ico">⏳</div><h3>Gone in 24h</h3><p>Snaps vanish after a day. Send one as <b>view once</b> to make it vanish after one look.</p></div>
+  </section>
+
+  <footer>HourSnap · by Storm Gees</footer>
+</div>
+
+<script>
+  (function () {
+    var ua = navigator.userAgent || '';
+    var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    var android = /Android/i.test(ua);
+    function show(which) {
+      ['android', 'ios'].forEach(function (k) { document.getElementById(k).classList.toggle('on', k === which); });
+      document.getElementById('desk').classList.toggle('on', !which);
+      document.getElementById('switch').style.display = which ? '' : 'none';
+    }
+    show(android ? 'android' : ios ? 'ios' : null);
+    document.querySelectorAll('[data-go]').forEach(function (b) {
+      b.addEventListener('click', function () { show(b.getAttribute('data-go')); document.getElementById('switch').style.display = ''; });
+    });
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    document.getElementById('stamp').textContent = "'" + String(d.getFullYear()).slice(2) + ' ' + p(d.getMonth() + 1) + ' ' + p(d.getDate()) + ' ' + d.getHours() + 'u';
+  })();
+</script>
+</body>
+</html>

@@ -41,6 +41,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/release/app-release.apk out/HourSnap-${{ github.run_number }}.apk
+          cp android/app/build/outputs/apk/release/app-release.apk out/HourSnap.apk
 
       - uses: actions/upload-artifact@v4
         with:

@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Button, Icon, Press } from '../components/ui';
 import { T, useTheme } from '../theme';
 import { niceError, postSnap, type Me } from '../api';
+import { OnceMark } from '../components/ViewOnce';
 
 type Step = 'back' | 'front' | 'review' | 'posting';
 
@@ -46,6 +47,7 @@ export function Camera({
   const [front, setFront] = useState<string | null>(null);
   const [swapped, setSwapped] = useState(false);
   const [caption, setCaption] = useState('');
+  const [once, setOnce] = useState(false);
   const [error, setError] = useState('');
   const [kb, setKb] = useState(0);
 
@@ -102,7 +104,7 @@ export function Camera({
     setStep('posting');
     setError('');
     try {
-      await postSnap(me, back, front, caption, onTime, photoStyle);
+      await postSnap(me, back, front, caption, onTime, photoStyle, once);
       onPosted();
     } catch (e) {
       setError(niceError(e));
@@ -187,6 +189,19 @@ export function Camera({
           ) : (
             <>
               <View style={styles.sendRow}>
+                <Press
+                  onPress={() => {
+                    if (Platform.OS !== 'web') Haptics.selectionAsync();
+                    setOnce((o) => !o);
+                  }}
+                  radius={28}
+                  squish={0.85}
+                  accessibilityLabel={once ? 'View once is on' : 'View once is off'}
+                  accessibilityState={{ selected: once }}
+                  style={[styles.once, once && { backgroundColor: 'rgba(255,214,10,0.18)' }]}
+                >
+                  <OnceMark size={30} color={once ? '#FFD60A' : '#FFFFFF'} filled={once} />
+                </Press>
                 <TextInput
                   value={caption}
                   onChangeText={setCaption}
@@ -207,7 +222,11 @@ export function Camera({
                   {step === 'posting' ? <ActivityIndicator color={c.onPrimary} /> : <Icon name="send" size={24} color={c.onPrimary} />}
                 </Press>
               </View>
-              {!kb && <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.55)' }]}>Tap the small photo to swap them</Text>}
+              {once ? (
+                <Text style={[T.bodySmall, { color: '#FFD60A', textAlign: 'center' }]}>View once: everyone can open it one time. Not in memories.</Text>
+              ) : (
+                !kb && <Text style={[T.bodySmall, { color: 'rgba(235,235,245,0.55)' }]}>Tap 1 for view once · tap the small photo to swap</Text>
+              )}
             </>
           )}
         </View>
@@ -229,5 +248,6 @@ const mk = (c: ReturnType<typeof useTheme>) =>
   shutterInner: { width: 62, height: 62, borderRadius: 31, backgroundColor: c.primaryContainer },
   sendRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
   caption: { flex: 1, height: 56, borderRadius: 28, paddingHorizontal: 20, backgroundColor: 'rgba(118,118,128,0.28)', color: '#FFFFFF' },
+  once: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(118,118,128,0.28)' },
   send: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
 });

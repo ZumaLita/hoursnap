@@ -19,6 +19,9 @@ export type Snap = {
   reactions: string[];
   reportedBy?: string[] | null;
   style?: string | null;
+  /** View once: others can open it a single time, it never shows in the feed or memories. */
+  viewOnce?: boolean | null;
+  viewedBy?: string[] | null;
 };
 
 const everyone = Role.users();
@@ -176,7 +179,7 @@ export async function listKeptSnaps(userId: string): Promise<Snap[]> {
   return (r.rows as unknown as Snap[]).filter((x) => x.backId !== EXPIRED);
 }
 
-export async function postSnap(me: Me, backUri: string, frontUri: string, caption: string, onTime: boolean, style = 'tape'): Promise<Snap> {
+export async function postSnap(me: Me, backUri: string, frontUri: string, caption: string, onTime: boolean, style = 'tape', viewOnce = false): Promise<Snap> {
   const filePerms = [Permission.read(everyone), Permission.delete(Role.user(me.id)), Permission.delete(admin)];
   const stamp = Date.now();
   const [backId, frontId] = await Promise.all([uploadImage(backUri, `back-${stamp}.jpg`, filePerms), uploadImage(frontUri, `front-${stamp}.jpg`, filePerms)]);
@@ -198,6 +201,8 @@ export async function postSnap(me: Me, backUri: string, frontUri: string, captio
       reactions: [],
       reportedBy: [],
       style,
+      viewOnce,
+      viewedBy: [],
     },
     permissions: [Permission.read(everyone), Permission.update(everyone), Permission.delete(Role.user(me.id)), Permission.delete(admin)],
   });
@@ -219,6 +224,21 @@ export function react(snap: Snap, userId: string, emoji: string) {
   const others = snap.reactions.filter((r) => !r.startsWith(userId + ':'));
   const next = mine === `${userId}:${emoji}` ? others : [...others, `${userId}:${emoji}`];
   return patch(snap, { reactions: next });
+}
+
+/** Marks a view-once snap as opened by this person, so it can't be opened again. */
+export function markViewed(snap: Snap, userId: string) {
+  const list = snap.viewedBy ?? [];
+  return patch(snap, { viewedBy: list.includes(userId) ? list : [...list, userId] });
+}
+
+/** Forget a view-once photo after it was shown, so it isn't kept in memory. */
+export function forgetPhoto(fileId: string) {
+  const p = cache.get(fileId);
+  cache.delete(fileId);
+  p?.then((u) => {
+    if (u.startsWith('blob:') && typeof URL !== 'undefined') URL.revokeObjectURL(u);
+  }).catch(() => {});
 }
 
 /** Reported snaps are hidden for everyone except Storm (admin) until he checks them. */

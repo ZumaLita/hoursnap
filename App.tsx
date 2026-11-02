@@ -14,6 +14,8 @@ import { Caveat_600SemiBold } from '@expo-google-fonts/caveat';
 import { VT323_400Regular } from '@expo-google-fonts/vt323';
 import { TabBar, type Tab } from './src/components/TabBar';
 import { Viewer } from './src/components/Viewer';
+import { ViewOnceViewer } from './src/components/ViewOnce';
+import { InstallPrompt } from './src/components/InstallPrompt';
 import { Login } from './src/screens/Login';
 import { Home } from './src/screens/Home';
 import { Streaks } from './src/screens/Streaks';
@@ -39,6 +41,7 @@ import {
   saveProfile,
   setBanned,
   toggleKeep,
+  markViewed,
   type Me,
   type Member,
   type Snap,
@@ -78,6 +81,7 @@ export default function App() {
   const [viewer, setViewer] = useState<{ ids: string[]; start: string } | null>(null);
   const [photoStyle, setPhotoStyle] = useState<PhotoStyle>('tape');
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [once, setOnce] = useState<Snap | null>(null);
 
   // Restore session and settings.
   useEffect(() => {
@@ -268,6 +272,13 @@ export default function App() {
             setSnaps((all) => (me.admin ? all : all.filter((x) => x.$id !== s.$id)));
           }}
           onClearReports={async (s) => replace(await clearReports(s))}
+          onOpenOnce={(s) => {
+            if (s.authorId === me.id || (s.viewedBy ?? []).includes(me.id)) return;
+            setOnce(s);
+            // Counts as opened right away, like WhatsApp.
+            replace({ ...s, viewedBy: [...(s.viewedBy ?? []), me.id] });
+            markViewed(s, me.id).then(replace).catch(() => {});
+          }}
         />
       )}
       {tab === 'streaks' && <Streaks me={me} members={members.filter((m) => !m.banned)} rows={streakRows} refreshing={refreshing} onRefresh={load} />}
@@ -319,6 +330,8 @@ export default function App() {
         />
       )}
       <TabBar tab={tab} onTab={setTab} onSnap={() => setCamera(true)} />
+      <ViewOnceViewer key={once?.$id ?? 'none'} snap={once} onClose={() => setOnce(null)} />
+      <InstallPrompt />
       <Viewer
         key={viewer?.start ?? 'none'}
         snaps={viewerSnaps}

@@ -30,7 +30,7 @@ export function Memories({
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const [view, setView] = useState<'kept' | 'mine'>('kept');
-  const list = view === 'kept' ? kept : snaps.filter((s) => s.authorId === me.id);
+  const list = (view === 'kept' ? kept : snaps.filter((s) => s.authorId === me.id)).filter((s) => !s.viewOnce);
   const contentW = Math.min(width, 640) - 32;
   const tileW = Math.floor((contentW - 8) / 2);
 
@@ -57,9 +57,9 @@ export function Memories({
           <Shape kind="clover" size={96} color={c.secondaryContainer}>
             <Icon name={view === 'kept' ? 'pin-outline' : 'image-multiple-outline'} size={40} color={c.onSecondaryContainer} />
           </Shape>
-          <Text style={[T.titleLarge, { color: c.onSurface, marginTop: 16 }]}>{view === 'kept' ? 'Nothing kept yet' : 'No snaps this week'}</Text>
+          <Text style={[T.titleLarge, { color: c.onSurface, marginTop: 16 }]}>{view === 'kept' ? 'Nothing kept yet' : 'No snaps today'}</Text>
           <Text style={[T.bodyMedium, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 6, maxWidth: 300 }]}>
-            {view === 'kept' ? 'Tap Keep on any snap to save it forever. Everything else disappears after 7 days.' : 'Snaps you take show up here for 7 days.'}
+            {view === 'kept' ? 'Tap Keep on any snap to save it forever. Everything else disappears after 24 hours.' : 'Snaps you take show up here for 24 hours.'}
           </Text>
         </View>
       ) : (

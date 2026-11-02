@@ -2,5 +2,18 @@
   "buildCommand": "npx expo export -p web",
   "outputDirectory": "dist",
   "installCommand": "npm ci",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/join",
+      "destination": "/join/index.html"
+    },
+    {
+      "source": "/join/",
+      "destination": "/join/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

@@ -10,6 +10,7 @@ import { PIN_LENGTH } from '../config';
 import { type Schedule } from '../schedule';
 import { remindersSupported } from '../notify';
 import { PHOTO_STYLES, type PhotoStyle } from '../components/Print';
+import { canInstall, showInstallHelp } from '../components/InstallPrompt';
 
 export function MeScreen({
   me,
@@ -202,6 +203,7 @@ export function MeScreen({
 
       <SectionLabel>Account</SectionLabel>
       <Card tone="low">
+        {canInstall() && <ListItem icon="cellphone-arrow-down" title="Add to home screen" supporting="Open HourSnap like a real app" onPress={showInstallHelp} />}
         <ListItem icon="key-outline" title="Change PIN" supporting={`${PIN_LENGTH} digits`} onPress={() => setPinOpen((o) => !o)} trailing={<Icon name={pinOpen ? 'chevron-up' : 'chevron-down'} size={24} color={c.onSurfaceVariant} />} />
         {pinOpen && (
           <View style={{ padding: 16, paddingTop: 4, gap: 12 }}>

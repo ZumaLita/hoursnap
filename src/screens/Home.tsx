@@ -64,6 +64,7 @@ export function Home({
   onDelete,
   onReport,
   onClearReports,
+  onOpenOnce,
 }: {
   me: Me;
   members: Member[];
@@ -78,6 +79,7 @@ export function Home({
   onDelete: (s: Snap) => void;
   onReport: (s: Snap) => void;
   onClearReports: (s: Snap) => void;
+  onOpenOnce: (s: Snap) => void;
 }) {
   const c = useTheme();
   const s = useStyles(makeStyles);
@@ -168,7 +170,7 @@ export function Home({
         item.type === 'header' ? (
           <Text style={[T.headlineSmall, s.day, { color: c.onSurface }]}>{dayLabel(item.day)}</Text>
         ) : (
-          <SnapCard snap={item.snap} meId={me.id} admin={me.admin} onReact={(e) => onReact(item.snap, e)} onKeep={() => onKeep(item.snap)} onDelete={() => onDelete(item.snap)} onReport={() => onReport(item.snap)} onClearReports={() => onClearReports(item.snap)} />
+          <SnapCard snap={item.snap} meId={me.id} admin={me.admin} onReact={(e) => onReact(item.snap, e)} onKeep={() => onKeep(item.snap)} onDelete={() => onDelete(item.snap)} onReport={() => onReport(item.snap)} onClearReports={() => onClearReports(item.snap)} onOpenOnce={() => onOpenOnce(item.snap)} />
         )
       }
     />
