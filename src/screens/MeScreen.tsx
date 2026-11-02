@@ -63,7 +63,7 @@ export function MeScreen({
     setBusy(true);
     setPinMsg('');
     try {
-      await changePin(me.name, oldPin, newPin);
+      await changePin(oldPin, newPin);
       setPinMsg('PIN changed. Save it somewhere safe!');
       setOldPin('');
       setNewPin('');

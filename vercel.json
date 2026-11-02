@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx expo export -p web",
+  "buildCommand": "npx expo export -p web && (curl -fsSL -o dist/HourSnap.apk https://github.com/ZumaLita/hoursnap/releases/latest/download/HourSnap.apk || echo 'No APK release yet')",
   "outputDirectory": "dist",
   "installCommand": "npm ci",
   "rewrites": [
@@ -14,6 +14,25 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/HourSnap.apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"HourSnap.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { BUCKET_ID, DB_ID, KEEP_HOURS, PROFILES_TABLE, SNAPS_TABLE, loginEmail, loginPassword } from './config';
+import { BUCKET_ID, DB_ID, KEEP_HOURS, PROFILES_TABLE, SNAPS_TABLE, loginEmail, loginPassword, phoneFromEmail } from './config';
 import { ID, Permission, Query, Role, account, imageDataUri, storage, tables, uploadImage } from './sdk';
 import { DEFAULT_SCHEDULE, decodeWindow, encodeWindow, type Schedule } from './schedule';
 
@@ -34,7 +34,7 @@ export const dayKey = (d = new Date()) =>
 const code = (e: unknown) => (e as { type?: string; code?: number })?.type ?? '';
 export function niceError(e: unknown) {
   const msg = (e as { message?: string })?.message ?? String(e);
-  if (/invalid credentials|user_invalid_credentials/i.test(msg)) return 'Wrong PIN for that name.';
+  if (/invalid credentials|user_invalid_credentials/i.test(msg)) return 'Wrong PIN for this number.';
   if (/user_count_exceeded|limit/i.test(msg) && /user/i.test(msg)) return 'HourSnap is full. Ask Storm to make room.';
   if (/network|fetch/i.test(msg)) return "Couldn't reach the server. Check your internet.";
   return msg;
@@ -44,7 +44,7 @@ export function niceError(e: unknown) {
 export async function currentUser(): Promise<Me | null> {
   try {
     const u = await account.get();
-    return { id: u.$id, name: u.name || 'Me', admin: (u.labels ?? []).includes('admin') };
+    return { id: u.$id, name: u.name || '', admin: (u.labels ?? []).includes('admin') };
   } catch {
     return null;
   }
@@ -57,13 +57,13 @@ async function clearSession() {
 }
 
 /**
- * Tries to log in. Returns 'ok' when it worked, or 'unknown' when the name+PIN didn't match:
- * that's either a brand-new name or a wrong PIN, so the screen asks to confirm the PIN to sign up.
+ * Tries to log in. Returns 'ok' when it worked, or 'unknown' when the number+PIN didn't match:
+ * that's either a new number or a wrong PIN, so the screen asks to type the PIN again to sign up.
  */
-export async function login(name: string, pin: string): Promise<'ok' | 'unknown'> {
+export async function login(phone: string, pin: string): Promise<'ok' | 'unknown'> {
   await clearSession();
   try {
-    await account.createEmailPasswordSession({ email: loginEmail(name), password: loginPassword(name, pin) });
+    await account.createEmailPasswordSession({ email: loginEmail(phone), password: loginPassword(phone, pin) });
     return 'ok';
   } catch (e) {
     if (/invalid credentials|user_invalid_credentials/i.test(String((e as Error).message) + code(e))) return 'unknown';
@@ -71,29 +71,39 @@ export async function login(name: string, pin: string): Promise<'ok' | 'unknown'
   }
 }
 
-/** Creates a new account for this name with the chosen PIN and logs in. */
-export async function signup(name: string, pin: string): Promise<Me> {
+/** Thrown by signup when the number already has an account, so the PIN they typed was wrong. */
+export class NumberTaken extends Error {}
+
+/** Makes a new account for this phone number with the chosen PIN and logs in. The name comes next. */
+export async function signup(phone: string, pin: string): Promise<Me> {
   await clearSession();
   try {
-    await account.create({ userId: ID.unique(), email: loginEmail(name), password: loginPassword(name, pin), name: name.trim() });
+    await account.create({ userId: ID.unique(), email: loginEmail(phone), password: loginPassword(phone, pin) });
   } catch (e) {
-    if (/user_already_exists|already exists/i.test(String((e as Error).message) + code(e)))
-      throw new Error('That name is already taken. Wrong PIN, or add your last initial (like "Lena V").');
+    if (/user_already_exists|already exists/i.test(String((e as Error).message) + code(e))) throw new NumberTaken('This number already has an account.');
     throw e;
   }
-  await account.createEmailPasswordSession({ email: loginEmail(name), password: loginPassword(name, pin) });
+  await account.createEmailPasswordSession({ email: loginEmail(phone), password: loginPassword(phone, pin) });
   const me = await currentUser();
   if (!me) throw new Error('Could not log in');
-  await saveProfile(me, DEFAULT_SCHEDULE);
   return me;
+}
+
+/** Sets the name everyone sees, and makes the profile row. */
+export async function setName(me: Me, name: string, schedule: Schedule = DEFAULT_SCHEDULE): Promise<Me> {
+  const u = await account.updateName({ name: name.trim() });
+  const next = { ...me, name: u.name };
+  await saveProfile(next, schedule);
+  return next;
 }
 
 export async function logout() {
   await clearSession();
 }
 
-export async function changePin(name: string, oldPin: string, newPin: string) {
-  await account.updatePassword({ password: loginPassword(name, newPin), oldPassword: loginPassword(name, oldPin) });
+export async function changePin(oldPin: string, newPin: string) {
+  const phone = phoneFromEmail((await account.get()).email);
+  await account.updatePassword({ password: loginPassword(phone, newPin), oldPassword: loginPassword(phone, oldPin) });
 }
 
 // ---------- people ----------

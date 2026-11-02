@@ -1,15 +1,15 @@
 import React, { useRef, useState } from 'react';
-import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon } from '../components/ui';
 import { FONTS, S, T, useStyles, useTheme, type Theme } from '../theme';
-import { PIN_LENGTH } from '../config';
-import { currentUser, login, niceError, signup, type Me } from '../api';
+import { PIN_LENGTH, validPhone } from '../config';
+import { NumberTaken, currentUser, login, niceError, setName as saveMyName, signup, type Me } from '../api';
 
-type Step = 'name' | 'pin' | 'confirm';
+type Step = 'phone' | 'pin' | 'confirm' | 'name';
 
 /** Big PIN boxes that fill as you type. */
-function PinBoxes({ value, onChange, onDone, autoFocus }: { value: string; onChange: (v: string) => void; onDone: () => void; autoFocus?: boolean }) {
+function PinBoxes({ value, onChange, onDone, autoFocus }: { value: string; onChange: (v: string) => void; onDone: (v: string) => void; autoFocus?: boolean }) {
   const c = useTheme();
   const ref = useRef<React.ElementRef<typeof TextInput>>(null);
   return (
@@ -32,7 +32,7 @@ function PinBoxes({ value, onChange, onDone, autoFocus }: { value: string; onCha
         onChangeText={(t) => {
           const v = t.replace(/\D/g, '').slice(0, PIN_LENGTH);
           onChange(v);
-          if (v.length === PIN_LENGTH) setTimeout(onDone, 120);
+          if (v.length === PIN_LENGTH) setTimeout(() => onDone(v), 120);
         }}
         keyboardType="number-pad"
         maxLength={PIN_LENGTH}
@@ -43,60 +43,89 @@ function PinBoxes({ value, onChange, onDone, autoFocus }: { value: string; onCha
   );
 }
 
-export function Login({ onDone }: { onDone: (me: Me) => void }) {
+export function Login({ onDone, nameFor }: { onDone: (me: Me) => void; nameFor?: Me }) {
   const c = useTheme();
   const s = useStyles(makeStyles);
   const insets = useSafeAreaInsets();
-  const [step, setStep] = useState<Step>('name');
-  const [name, setName] = useState('');
+  const [step, setStep] = useState<Step>(nameFor ? 'name' : 'phone');
+  const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
   const [pin2, setPin2] = useState('');
+  const [name, setName] = useState('');
+  const [newMe, setNewMe] = useState<Me | null>(nameFor ?? null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [mismatch, setMismatch] = useState<'pin' | 'taken' | null>(null);
 
   const goPin = () => {
-    if (name.trim().length < 2) return setError('Type your name (at least 2 letters).');
+    if (!validPhone(phone)) return setError('Type your full phone number, like 0470 12 34 56.');
     setError('');
     setPin('');
     setStep('pin');
   };
 
-  const tryLogin = async () => {
-    if (pin.length < PIN_LENGTH) return setError(`Your PIN has ${PIN_LENGTH} digits.`);
+  // All 6 digits typed: try to log in. A new number goes straight to "type it again".
+  const tryLogin = async (value: string) => {
     setBusy(true);
     setError('');
     try {
-      const r = await login(name, pin);
+      const r = await login(phone, value);
       if (r === 'ok') {
         const me = await currentUser();
         if (me) onDone(me);
       } else {
         setPin2('');
+        setMismatch(null);
         setStep('confirm');
       }
     } catch (e) {
+      setPin('');
       setError(niceError(e));
     } finally {
       setBusy(false);
     }
   };
 
-  const create = async () => {
-    if (pin2 !== pin) {
+  // Second time typed: same PIN makes the account, then asks for a name.
+  const confirm = async (value: string) => {
+    if (value !== pin) {
+      setMismatch('pin');
       setPin2('');
-      return setError("The PINs don't match. Try again.");
+      return;
     }
     setBusy(true);
     setError('');
+    setMismatch(null);
     try {
-      onDone(await signup(name, pin));
+      const me = await signup(phone, pin);
+      setNewMe(me);
+      setStep('name');
     } catch (e) {
-      const msg = niceError(e);
-      setError(msg);
-      if (/already taken/i.test(msg)) {
-        setPin('');
-        setStep('pin');
-      }
+      if (e instanceof NumberTaken) setMismatch('taken');
+      else setError(niceError(e));
+      setPin2('');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const changePin = () => {
+    setPin('');
+    setPin2('');
+    setMismatch(null);
+    setError('');
+    setStep('pin');
+  };
+
+  const saveName = async () => {
+    if (name.trim().length < 2) return setError('Type your name (at least 2 letters).');
+    if (!newMe) return;
+    setBusy(true);
+    setError('');
+    try {
+      onDone(await saveMyName(newMe, name));
+    } catch (e) {
+      setError(niceError(e));
     } finally {
       setBusy(false);
     }
@@ -107,13 +136,88 @@ export function Login({ onDone }: { onDone: (me: Me) => void }) {
       <ScrollView contentContainerStyle={[s.wrap, { paddingTop: insets.top + 48, paddingBottom: insets.bottom + 32 }]} keyboardShouldPersistTaps="handled">
         <Image source={require('../../assets/logo-mark.png')} style={s.logo} accessibilityLabel="HourSnap logo" />
 
-        {step === 'name' && (
+        {step === 'phone' && (
           <>
             <Text style={[T.displayMedium, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>HourSnap</Text>
             <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 32 }]}>
               Show your day, one hour at a time.{'\n'}Back camera and selfie, together.
             </Text>
-            <Text style={[T.titleMedium, { color: c.onSurface, marginBottom: 8 }]}>What's your name?</Text>
+            <Text style={[T.titleMedium, { color: c.onSurface, marginBottom: 8 }]}>Your phone number</Text>
+            <TextInput
+              value={phone}
+              onChangeText={(t) => setPhone(t.replace(/[^\d+ ]/g, ''))}
+              placeholder="0470 12 34 56"
+              placeholderTextColor={c.outline}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              textContentType="telephoneNumber"
+              autoFocus
+              returnKeyType="next"
+              onSubmitEditing={goPin}
+              style={s.input}
+            />
+            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Only used to log you in. Nobody else sees it.</Text>
+            {!!error && <Text style={[T.bodyMedium, s.error]}>{error}</Text>}
+            <Button title="Next" icon="arrow-right" big onPress={goPin} style={{ marginTop: 24 }} />
+          </>
+        )}
+
+        {step === 'pin' && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Your PIN</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 28 }]}>
+              Type your {PIN_LENGTH}-digit PIN.{'\n'}New here? Make one up now.
+            </Text>
+            <PinBoxes key="pin" value={pin} onChange={setPin} onDone={tryLogin} autoFocus />
+            {busy && <ActivityIndicator color={c.primary} style={{ marginTop: 20 }} />}
+            {!!error && <Text style={[T.bodyMedium, s.error, { textAlign: 'center' }]}>{error}</Text>}
+            <Button title="Other phone number" variant="text" onPress={() => setStep('phone')} style={{ marginTop: 24 }} />
+          </>
+        )}
+
+        {step === 'confirm' && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Type it again</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 20 }]}>
+              First time on HourSnap? Type the same PIN again to make your account.
+            </Text>
+            <View style={[s.warn, { backgroundColor: c.tertiaryContainer }]}>
+              <Icon name="safe-square-outline" size={26} color={c.onTertiaryContainer} />
+              <Text style={[T.titleSmall, { color: c.onTertiaryContainer, flex: 1, fontFamily: FONTS.b }]}>
+                Save your PIN somewhere safe! You need it to log in on another phone.
+              </Text>
+            </View>
+            <PinBoxes key="confirm" value={pin2} onChange={(v) => { setPin2(v); if (v) setMismatch(null); }} onDone={confirm} autoFocus />
+            {busy && <ActivityIndicator color={c.primary} style={{ marginTop: 20 }} />}
+            {!!error && <Text style={[T.bodyMedium, s.error, { textAlign: 'center' }]}>{error}</Text>}
+            {!mismatch && !busy && (
+              <Button
+                title="I already have an account"
+                variant="text"
+                onPress={() => {
+                  changePin();
+                  setError('Wrong PIN for this number. Try again.');
+                }}
+                style={{ marginTop: 20 }}
+              />
+            )}
+            {mismatch && (
+              <View style={[s.mismatch, { backgroundColor: c.errorContainer }]}>
+                <Text style={[T.bodyLarge, { color: c.onErrorContainer, textAlign: 'center' }]}>
+                  {mismatch === 'pin' ? "That's not the same PIN. Try again, or pick a new one." : 'This number already has an account, so that PIN was wrong.'}
+                </Text>
+                <Button title={mismatch === 'pin' ? 'Change PIN' : 'Try my PIN again'} icon="key-outline" big onPress={changePin} style={{ marginTop: 12, alignSelf: 'stretch' }} />
+              </View>
+            )}
+          </>
+        )}
+
+        {step === 'name' && (
+          <>
+            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>You're in!</Text>
+            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 28 }]}>
+              What should people see as your name?
+            </Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -122,54 +226,13 @@ export function Login({ onDone }: { onDone: (me: Me) => void }) {
               autoCapitalize="words"
               autoCorrect={false}
               autoFocus
-              returnKeyType="next"
-              onSubmitEditing={goPin}
+              returnKeyType="done"
+              onSubmitEditing={saveName}
+              maxLength={24}
               style={s.input}
             />
-            <Text style={[T.bodySmall, { color: c.onSurfaceVariant, marginTop: 8 }]}>Two people with the same name? Add your last initial, like "Lena V".</Text>
             {!!error && <Text style={[T.bodyMedium, s.error]}>{error}</Text>}
-            <Button title="Next" icon="arrow-right" big onPress={goPin} style={{ marginTop: 24 }} />
-          </>
-        )}
-
-        {step === 'pin' && (
-          <>
-            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>Hi {name.trim()}</Text>
-            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 28 }]}>
-              Type your {PIN_LENGTH}-digit PIN.{'\n'}First time here? Pick a new one.
-            </Text>
-            <PinBoxes value={pin} onChange={setPin} onDone={tryLogin} autoFocus />
-            {!!error && <Text style={[T.bodyMedium, s.error, { textAlign: 'center' }]}>{error}</Text>}
-            <Button title="Continue" icon="arrow-right" big busy={busy} onPress={tryLogin} style={{ marginTop: 28 }} />
-            <Button title="Not you? Change name" variant="text" onPress={() => setStep('name')} style={{ marginTop: 6 }} />
-          </>
-        )}
-
-        {step === 'confirm' && (
-          <>
-            <Text style={[T.headlineLarge, { color: c.onSurface, textAlign: 'center', marginTop: 20 }]}>New here?</Text>
-            <Text style={[T.bodyLarge, { color: c.onSurfaceVariant, textAlign: 'center', marginTop: 8, marginBottom: 20 }]}>
-              Type the same PIN again to make your account, {name.trim()}.
-            </Text>
-            <View style={[s.warn, { backgroundColor: c.tertiaryContainer }]}>
-              <Icon name="safe-square-outline" size={26} color={c.onTertiaryContainer} />
-              <Text style={[T.titleSmall, { color: c.onTertiaryContainer, flex: 1, fontFamily: FONTS.b }]}>
-                Save your PIN somewhere safe! You need it to log in on another phone.
-              </Text>
-            </View>
-            <PinBoxes value={pin2} onChange={setPin2} onDone={create} autoFocus />
-            {!!error && <Text style={[T.bodyMedium, s.error, { textAlign: 'center' }]}>{error}</Text>}
-            <Button title="Make my account" icon="check" big busy={busy} onPress={create} style={{ marginTop: 28 }} />
-            <Button
-              title="I already have an account"
-              variant="text"
-              onPress={() => {
-                setPin('');
-                setError('Wrong PIN for that name. Try again.');
-                setStep('pin');
-              }}
-              style={{ marginTop: 6 }}
-            />
+            <Button title="Let's go" icon="arrow-right" big busy={busy} onPress={saveName} style={{ marginTop: 24 }} />
           </>
         )}
       </ScrollView>
@@ -190,5 +253,6 @@ const makeStyles = (c: Theme) =>
     logo: { width: 96, height: 96, alignSelf: 'center', transform: [{ rotate: '-4deg' }] },
     input: { height: 60, borderRadius: S.lg, borderWidth: 2, borderColor: c.outlineVariant, backgroundColor: c.surfaceContainerLow, paddingHorizontal: 18, color: c.onSurface, ...T.titleLarge },
     error: { color: c.error, marginTop: 12 },
+    mismatch: { padding: 16, borderRadius: S.xl, marginTop: 20 },
     warn: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: S.lgInc, marginBottom: 24 },
   });

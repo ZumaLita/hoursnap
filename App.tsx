@@ -186,9 +186,9 @@ export default function App() {
       </View>,
     );
 
-  if (!me)
+  if (!me || !me.name)
     return wrap(
-      <Login onDone={(u) => setMe(u)} />,
+      <Login key={me ? 'name' : 'login'} nameFor={me ?? undefined} onDone={(u) => setMe(u)} />,
     );
 
   if (onboarded === null)

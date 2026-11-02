@@ -25,6 +25,24 @@ export const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
-/** Hidden login: people only ever type their name and PIN. */
-export const loginEmail = (name: string) => `${slug(name)}@hoursnap.app`;
-export const loginPassword = (name: string, pin: string) => `hoursnap-${slug(name)}-${pin.trim()}`;
+/**
+ * Phone numbers become one plain form: "0470 12 34 56", "+32 470 12 34 56" and "0032470123456"
+ * all turn into "32470123456". Numbers starting with a single 0 are taken as Belgian.
+ */
+export function phoneKey(raw: string) {
+  let d = raw.replace(/\D/g, '');
+  if (raw.trim().startsWith('+')) return d;
+  if (d.startsWith('00')) return d.slice(2);
+  if (d.startsWith('0')) return '32' + d.slice(1);
+  return d;
+}
+export const validPhone = (raw: string) => {
+  const k = phoneKey(raw);
+  return k.length >= 10 && k.length <= 15;
+};
+
+/** Hidden login: people only ever type their phone number and PIN. The number is never shown to others. */
+export const loginEmail = (phone: string) => `p${phoneKey(phone)}@hoursnap.app`;
+export const loginPassword = (phone: string, pin: string) => `hoursnap-${phoneKey(phone)}-${pin.trim()}`;
+/** Gets the phone key back from the hidden login email. */
+export const phoneFromEmail = (email: string) => email.replace(/^p/, '').replace(/@.*/, '');
